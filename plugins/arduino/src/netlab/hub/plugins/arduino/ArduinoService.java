@@ -31,9 +31,8 @@ import netlab.hub.serial.SerialPort;
 import netlab.hub.util.Logger;
 
 /**
- * <p>Implementation of Service for Arduino access. Makes use of the
- * cc.arduino Processing library for communication with an Arduino board
- * running StandardFirmata.</p>
+ * <p>Implementation of Service for Arduino access. Communicates with an 
+ * Arduino board running StandardFirmata.</p>
  *
  */
 public class ArduinoService extends Service {
