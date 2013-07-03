@@ -1,0 +1,79 @@
+<!-- 
+	Copy support folders to each standalone application folder
+	created by the Processing sketch "Export Application" command.
+ -->
+<project name="deploy-applications" default="deploy" basedir=".">
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${user.home}/Documents/Eclipse_workspace/java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
+		</classpath>
+	</taskdef>
+	
+	<!-- Define a custom task for extracting the platform name from the directory name -->
+	<scriptdef name="platformname" language="javascript">
+		<attribute name="text" />
+		<attribute name="property" />
+	    <![CDATA[
+	      var text = attributes.get("text");
+	      var start = text.lastIndexOf(".") + 1;
+	      project.setProperty(attributes.get("property"), text.substring(start));
+	    ]]>
+	</scriptdef>
+	
+	<!-- Load the Hub properties file so we can get the version info -->
+	<loadproperties srcFile="conf/hub.properties" />
+
+	<property name="sketch.name" value="NETLabHub_runner" />
+	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
+	<property name="sketch.dir" value="${sketchbook.dir}/${sketch.name}"/>
+	<property name="build.dir" value="build/applications/${app.version}-${app.build}"/>
+	
+	<target name="deleteBuildDir">		
+		<if>
+			<available file="${build.dir}" type="dir" />
+			<then>
+				<delete includeEmptyDirs="true">
+					<fileset dir="${build.dir}">
+						<include name="**/*" />
+					</fileset>
+				</delete>
+			</then>
+		</if>
+	</target>
+
+	<target name="deploy" depends="deleteBuildDir">
+		<!-- Process each application folder (copy support dirs, create zip archives) -->
+		<foreach target="process-application-directory" param="theAppDir">
+			<path>
+				<dirset dir="${sketch.dir}">
+					<include name="application*" />
+				</dirset>
+			</path>
+		</foreach>
+		<!-- Move the zip archives to the build directory -->
+		<mkdir dir="${build.dir}" />
+		<move todir="${build.dir}">
+			<fileset dir="${sketch.dir}" includes="application.*/**" />
+		</move>
+		<echo>Application support files deployed to ${build.dir}</echo>
+	</target>
+
+	<target name="process-application-directory">
+		<mkdir dir="${theAppDir}/log" />
+		<touch file="${theAppDir}/log/hub.log" />
+		<copy todir="${theAppDir}">
+			<fileset dir="${sketch.dir}" includes="plugins/** conf/** data/** commands.txt" excludes=".DS_Store"/>
+		</copy>
+		<delete>
+			<fileset dir="${theAppDir}" includes="**/source/*" />
+		</delete>
+		<delete>
+			<dirset dir="${theAppDir}" includes="source" />
+		</delete>
+		<platformname text="${theAppDir}" property="platform" />
+		<!-- Don't zip because Ant zip task will strip file permissions.
+		<zip destfile="${sketch.dir}/netlabhub-${app.version}-${platform}.zip" basedir="${theAppDir}" />-->
+	</target>
+
+</project>
