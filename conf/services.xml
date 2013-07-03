@@ -1,0 +1,45 @@
+<!DOCTYPE Services>
+
+	<!-- 
+	You can use this file to define custom services using existing classes.
+	By using existing plug-ins and filters you can create complex functionality.
+	
+	Services can be defined as new implementation of a specific service class
+	or by extending an existing service defined in another configuration file.
+	Extended services will inherit all of the startup messages and output filters
+	of the parent service. Elements defined in a child service will override all
+	elements of that type in the parent service.
+	
+	The base path for all services defined here will be /service/custom/[servicename]
+	 
+	IMPORTANT: you should backup and restore this file whenever you install 
+	an upgrade to the Hub software.
+	-->
+
+<Services>
+		
+	<!-- 
+	Define a new service based on the core/hello service that filters the output
+	using the JoinArguments filter.
+	Service path is /service/custom/hello
+	 -->
+	<Service enabled="true" name="hello" type="netlab.hub.plugins.tools.utility.HelloWorldService">
+		<Description>Hello World</Description>
+		<OutputFilters>
+			<Filter type="netlab.hub.filters.JoinArguments" enabled="true" />
+		</OutputFilters>
+	</Service>
+	
+	<!--  
+	Define a new service by extending the arduino/reader-writer service to automatically
+	connects to the serial port when the service starts.
+	Service path is /service/custom/arduino-autoconnect
+	 -->
+	<Service enabled="false" name="arduino-autoconnect" extends="/service/arduino/reader-writer">
+		<StartupMessages>
+			<Message>nlhubconfig/connect /dev/cu.usb*</Message>
+		</StartupMessages>
+	</Service>
+		
+			
+</Services>
