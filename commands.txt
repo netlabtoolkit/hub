@@ -1,0 +1,54 @@
+# The following commands are supported by all services:
+[servicepath]/poll [pattern] [times (0|1|n)] [samplerate (optional)]
+[servicepath]/stoppoll [pattern]
+[servicepath]/pollsamplerate [pattern] [rate]
+[servicepath]/setverbose [pattern] [1|0]
+[servicepath]/filterresponse [pattern]
+
+If no filter patterns are set then all responses are returned. 
+Multiple filter patterns will match results on ANY of the patterns.
+A filter pattern may contain wildcard character "*". Filters are applied
+only at the address level (i.e. osc arguments are ignored)
+
+If the "rate" argument is omitted from the poll command, the poll thread defaults to 30 samples per second.
+If no "setverbose" command is sent, the default is "false".
+
+Examples:
+
+# Continuously poll using the command "/service/test/reader-writer/analogin/3" at 30 fps
+/service/test/reader-writer/poll /analogin/3
+
+# Continuously poll using the command "/service/test/reader-writer/servo/3 45" at 30 fps
+/service/test/reader-writer/poll {/servo/3 45}
+
+# Do a one-time read of the value of "/service/test/reader-writer/analogin/3"
+/service/test/reader-writer/poll /analogin/3 1
+
+# Poll 10 times using the command "/service/test/reader-writer/analogin/3" at 30 fps
+/service/test/reader-writer/poll /analogin/3 10
+
+# Poll 10 times using the command "/service/test/reader-writer/analogin/3" at 5 fps
+/service/arduino/reader-writer/poll /analogin/3 10 5
+
+# Set the rate at which this client polls "/analogin/3" to 20 samples per second
+/service/test/reader-writer/pollsamplerate /analogin/3 20
+
+# Return all values matching "/analogin/3" for this client
+/service/test/reader-writer/setverbose /analogin/3 1
+
+# Return all values to this client
+/service/test/reader-writer/setverbose /* 1
+
+# Stop polling for the command "/service/arduino/reader-writer/test/3"
+/service/test/reader-writer/stoppoll /analogin/3
+
+# Return only results received from analog input 3 to the client
+/service/test/reader-writer/filterresponse /analogin/3
+
+# Return only results received from any analog input to the client
+/service/test/reader-writer/filterresponse /analogin/*
+
+
+Note that the following two commands are synonymous:
+/service/test/reader-writer/poll /analogin/3 1
+/service/test/reader-writer/analogin/3

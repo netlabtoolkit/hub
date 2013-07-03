@@ -1,0 +1,50 @@
+<!DOCTYPE PlugIn>
+
+<!-- 		
+		
+		**************************************************
+		SUPPORTED COMMANDS
+		**************************************************
+		
+		Note: the /connect command must be sent before any others
+		
+		*************************
+		Command: /service/linkm/reader-writer/connect
+		Connects to the linkm currently attached to the host computer.
+		Returns: N/A
+		
+		
+		**************************************************
+		SUPPORTED DEVICE COMMANDS
+		**************************************************
+		
+		************************
+		Command: /service/linkm/reader-writer/fadetorgb [I2C address] [r] [g] [b]
+		Comment: Fades the linkm LED at the specified address to the given rgb value
+		Example (fade LED 9 to white): 
+			/service/linkm/reader-writer/fadetorgb 9 255 255 255
+		Example (fade LED 9 to black): 
+			/service/linkm/reader-writer/fadetorgb 9 0 0 0
+		
+		************************
+		Command: /service/linkm/reader-writer/setfadespeed [I2C address] [speed (1-255)]
+		Comment: Sets the fade speed of the linkm LED at the specified address
+		Example (set LED 9 to instantaneous fade): 
+			/service/linkm/reader-writer/setfadespeed 9 255
+		Example (set LED 9 to slowest fade): 
+			/service/linkm/reader-writer/setfadespeed 9 1
+		
+		-->
+		
+<PlugIn version="core">
+
+	<Services>
+		 
+		<Service enabled="true" name="reader-writer" type="netlab.hub.plugins.linkm.LinkMService">
+			<Description>Service for communicating with a LinkM</Description>
+			<StartupMessages />
+		</Service>
+		
+	</Services>
+	
+</PlugIn>

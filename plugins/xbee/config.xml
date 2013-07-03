@@ -1,0 +1,94 @@
+<!DOCTYPE PlugIn>
+
+<!-- 
+		**************************************************
+		USAGE
+		**************************************************
+		
+		1. Send a /connect command to a specific service
+		2. Send messages to the device
+		
+		Example 1 - read from the first analog input port of remote xbee with
+		address 21 that is part of the network attached to COM6
+		
+			/service/xbee/reader-writer-series-1/connect COM6
+			/service/xbee/reader-writer-series-1/COM6/21/analogin/0
+		
+		Example 2 - read from the second analog input port of all remote xbees 
+		that are sending messages in the network attached to COM6
+		
+			/service/xbee/reader-writer-series-1/connect COM6
+			/service/xbee/reader-writer-series-1/COM6/*/analogin/1
+				(returns /service/xbee/reader-writer-series-1/COM6/[remote-id]/analogin/1 [value])
+			
+			
+			
+		
+		**************************************************
+		SUPPORTED COMMANDS
+		**************************************************
+		
+		Note: the /connect command must be sent before any others
+		
+		NOTE: all remoteid values are treated as Hex literals. This value can be
+		obtained from the 16-bit Source Address modem parameter in the X-CTU app.
+		
+		
+		*************************
+		/service/xbee/reader-writer/connect [port]
+		
+			Returns: N/A
+			Connects to the XBee network currently attached to the host computer. Settings can be
+			specified in the SystemProperties/Property element of this configuration file.
+		
+		*************************
+		/service/xbee/reader-writer/[port]/[remoteid]/analogin/[pin]
+			
+			Returns: the current value of the specified analog input pin	
+			Listens for input on the specified analog input port on the specified device.
+			Remote id supports wildcard using the '*' character.
+			Example: 
+				/service/xbee/reader-writer/COM6/57/analogin/0
+		
+		*************************
+		/service/xbee/reader-writer/[port]/[remoteid]/digitalin/[pin]
+			
+			Returns: the current state (0 or 1) of the specified digital input pin	
+			Listens for input on the specified analog input port on the specified device.
+			Remote id supports wildcard using the '*' character.
+			Example: 
+				/service/xbee/reader-writer/COM6/57/digitalin/0
+		
+		*************************
+		/service/xbee/reader-writer/[port]/[remoteid]/digitalout/[pin] [1 or 0]
+		
+			Turns on or off the specified digital pin.
+			Remote id supports wildcard using the '*' character. If wildcard 
+			is supplied as the remote id then the write will be broadcast to 
+			all remote xbees on the specified network.
+			Example: 
+				/service/xbee/reader-writer/COM6/57/digitalout/0 1
+		
+		-->
+		
+<PlugIn version="core">
+
+	<Services>
+		
+		<Service enabled="true" name="reader-writer-series-1" type="netlab.hub.plugins.xbee.XBeeService">
+			<Description>Service for reading and writing to a Series 1 XBee</Description>
+			<Parameters>
+				<Parameter name="xbee-series">1</Parameter>
+			</Parameters>
+		</Service>
+		 
+		<Service enabled="true" name="reader-writer-series-2" type="netlab.hub.plugins.xbee.XBeeService">
+			<Description>Service for reading and writing to a Series 2 XBee</Description>
+			<Parameters>
+				<Parameter name="xbee-series">2</Parameter>
+			</Parameters>
+		</Service>
+		
+	</Services>
+	
+</PlugIn>

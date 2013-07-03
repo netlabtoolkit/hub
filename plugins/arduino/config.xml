@@ -1,0 +1,106 @@
+<!DOCTYPE PlugIn>
+
+<!-- 
+		**************************************************
+		USAGE
+		**************************************************
+		
+		Example 1 - read from the first analog input port of 
+		the arduino connected to the first serial port found
+		
+			/service/arduino/reader-writer/connect {/dev/cu.usb*}
+			/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0/value
+		
+		Example 2 - set the second digital output port of the arduino
+		at the specific serial port to on/true
+		
+			/service/arduino/reader-writer/connect {/dev/cu.usbserial-A1234Q}
+			/service/arduino/reader-writer/{/dev/cu.usbserial-A1234Q}/digitalout/1/value 1
+			
+		
+		**************************************************
+		SUPPORTED COMMANDS
+		**************************************************
+		
+		Note: the /connect command must be sent before any others. 
+		
+		Note: the serial port name specification may include the * wildcard character. 
+		IMPORTANT: Serial port names that include slashes must be enclosed by curly braces.
+		
+		*************************
+		/service/arduino/reader-writer/connect [serial port name] [baud rate (optional)]
+		
+			Comment: Connects to the arduino currently attached to the host computer.
+			Returns: /service/arduino/reader-writer/connect [status [OK or FAIL]] [full serial port name or exception]
+				Clients should wait until an OK message is received before attempting to read to or write from the board.
+			Example: 
+				/service/arduino/reader-writer/connect /dev/cu.usb*
+				/service/arduino/reader-writer/connect /dev/cu.usb* 57600
+			Example return value:
+				/service/arduino/reader-writer/connect OK /dev/cu.usbserial-A1234Q
+				/service/arduino/reader-writer/connect FAIL java.lang.NumberFormatException
+		
+		************************
+		/service/arduino/reader-writer/[serial port name]/analogout/[pin]/value [value]
+		
+			Comment: Writes a PWM value to the specified digital pin
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/analogout/0/value 24
+		
+		************************
+		/service/arduino/reader-writer/[serial port name]/digitalout/[pin]/value [1|0]
+		
+			Comment: Turns on or off the specified digital pin
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/digitalout/0/value 1
+			
+		************************
+		/service/arduino/reader-writer/[serial port name]/analogin/[pin]/value
+		
+			Comment: Reads the current value of the specified analog pin (0-1023)
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0/value
+		
+		************************
+		/service/arduino/reader-writer/[serial port name]/digitalin/[pin]/value
+		
+			Comment: Reads the current status of the specified digital pin (0 or 1)
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/digitalin/0/value
+		
+		************************
+		/service/arduino/reader-writer/[serial port name]/servo/[pin]/angle [0-180]
+		
+			Comment: Sets the absolute angle of the servo connected to the specified pin.
+				Values outside 0-180 will automatically be limited to 0-180.
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/servo/0/angle 45
+			
+		************************
+		/service/arduino/reader-writer/[serial port name]/servo/[pin]/anglerelative [-180 - 180]
+		
+			Comment: Sets the relative angle of the servo connected to the specified pin.
+				The resulting absolute angle will be limited to 0-180.
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/servo/0/anglerelative -10
+			
+		************************
+		/service/arduino/reader-writer/[serial port name]/servo/[pin]/config [minPulse] [maxPulse] [angle (optional)]
+		
+			Comment: Configures the servo connected to the given pin.
+			Example: 
+				/service/arduino/reader-writer/{/dev/cu.usb*}/servo/0/config 45 90 0
+		
+		-->
+		
+<PlugIn version="core">
+
+	<Services>
+		 
+		<Service enabled="true" name="reader-writer" type="netlab.hub.plugins.arduino.ArduinoService">
+			<Description>Service for continuous reading from Arduino</Description>
+		</Service>
+		
+	</Services>
+	
+</PlugIn>

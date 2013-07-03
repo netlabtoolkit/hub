@@ -1,0 +1,176 @@
+<!DOCTYPE PlugIn>
+<PlugIn version="core">
+
+	<Services>
+		
+		
+		<!--
+		======================
+		Dump services config
+		======================
+		Dumps config when any command is sent.
+		e.g. /service/tools/list-services
+		-->
+		<Service enabled="true" name="list-services" type="netlab.hub.plugins.tools.utility.SendConfigService">
+			<Description>Service for listing current installed services</Description>
+		</Service>
+		
+		
+		<!--
+		======================
+		Pipe 
+		======================
+		
+		Supported commands:
+		/service/tools/pipe/connect/[pipe-id (optional)]
+		/service/tools/pipe/send/[pipe-id (optional)] [arg1] [arg2] ...
+		/service/tools/pipe/receive/[pipe-id (optional)]
+		/service/tools/pipe/latestvalue/[pipe-id (optional)]
+		
+		e.g.
+		/service/tools/pipe/connect (connects to the default pipe)
+		/service/tools/pipe/receive (automatically receives all messages sent to the default pipe) 
+		/service/tools/pipe/latestvalue (retrieves last value sent to the default pipe)
+		/service/tools/pipe/send foo (sends "foo" to all clients registered as receivers for the default pipe)
+		
+		/service/tools/pipe/connect/100 (connects to pipe 100)
+		/service/tools/pipe/receive/100 (automatically receives all messages sent to pipe 100) 
+		/service/tools/pipe/latestvalue/100 (retrieves last value sent to pipe 100)
+		/service/tools/pipe/send/100 foo (sends argument "foo" to all clients registered as receivers for pipe 100)
+		/service/tools/pipe/send/100 foo bar (sends arguments "foo" and "bar" to all clients registered as receivers for pipe 100)
+		 
+		-->
+		<Service enabled="true" name="pipe" type="netlab.hub.plugins.tools.pipe.PipeService">
+			<Description>Service for echoing input received from one client back to another client.</Description>
+		</Service>
+		
+		
+		<!--
+		======================
+		Download from URL 
+		======================
+		
+		Supported commands:
+		/service/tools/download/timeout [value in seconds] 
+		/service/tools/download/localpath [dir] (calling this will download to a local file instead of to the response stream)
+		/service/tools/download/get [url] [local filename (optional - uses last segment of URL if not provided)]
+		
+		
+		////////////////////////////////////////////////
+		COMMAND: /service/tools/download/timeout [value in seconds]
+		Return value: none
+		If no value is specified then the thread will wait indefinitely for the download to complete.
+		
+		Example that sets the timeout value so that the Hub will return a "TIMEOUT" message if image download is not complete in 10 seconds: 
+		
+		/service/tools/download/timeout 10
+		
+		
+		////////////////////////////////////////////////
+		COMMAND: /service/tools/download/localpath [dir]
+		Return value: none
+		
+		Example that instructs the Hub to download files to the folder "/Users/ewan/Documents":
+		
+		/service/tools/download/localpath /Users/ewan/Documents
+		
+		
+		////////////////////////////////////////////////
+		COMMAND: /service/tools/download/get [url] [local filename]
+		Return values: OK, ERROR, TIMEOUT
+		
+		Example that downloads the image at URL http://example.com/image.jpg to a local file called 1.jpg:
+		
+		/service/tools/download/get http://example.com/image.jpg 1.jpg
+		
+		
+		///// 
+		A complete session would look like this:
+		
+		[open socket to localhost:51000]
+		/service/tools/download/timeout 10
+		/service/tools/download/localpath /Users/ewan/Documents
+		/service/tools/download/get http://example.com/image1.jpg 1.jpg
+		/service/tools/download/get http://example.com/image2.jpg 2.jpg
+		/service/tools/download/get http://example.com/image3.jpg 3.jpg
+		[close socket]
+		
+		-->
+		<Service enabled="true" name="download" type="netlab.hub.plugins.tools.http.DownloadService">
+			<Description>Service for downloading a web resource to a file</Description>
+		</Service>
+		
+		
+		<!-- 
+		=======================
+		File I/O
+		=======================	
+		Command format: /service/tools/file-io/[command] [arg]
+		
+		Supported commands:
+		/service/tools/file-io/base [path to directory]
+		/service/tools/file-io/filename [filename]
+		/service/tools/file-io/get (returns the contents of the file)
+		/service/tools/file-io/put [string] (replaces the contents of the file with the string)
+		/service/tools/file-io/append [string] (appends the string to the file on a new line)
+		
+		NOTE: The string argument to the put and append commands needs to be enclosed in curly braces
+		if it contains more than one token; e.g. /service/tools/file-io/put {Hello world.}
+		-->
+		<Service enabled="true" name="file-io" type="netlab.hub.plugins.tools.fileio.FileIOService">
+			<Description>File server that returns the file contents</Description>
+			<OutputFilters>
+				<!--  Uncomment the next line to return only the bare file contents without the OSC wrapper -->
+				<!-- <Filter type="netlab.hub.filters.ExtractRawArgumentValue" enabled="true" />  -->
+			</OutputFilters>
+		</Service>
+		
+		<Service enabled="true" name="file-io-osc" type="netlab.hub.plugins.tools.fileio.FileIOService">
+			<Description>File server that returns the file contents in OSC-style format</Description>
+		</Service>
+		
+		
+		<!-- 
+		=======================
+		Proxy
+		=======================	
+		Command format: /service/tools/proxy/connect [port]
+		Command format: /service/tools/proxy/connect [host] [port]
+		Command format: /service/tools/proxy/service/[group]/[name]/[path]
+		e.g. /service/tools/proxy/service/hello/say
+		-->
+		<Service enabled="true" name="proxy" type="netlab.hub.plugins.tools.utility.ProxyService">
+			<Description>Dispatches message to another Hub service</Description>
+		</Service>
+		
+		<!-- 
+		=======================
+		Serial raw
+		=======================	
+		Command format: /service/tools/serial/[command] [arg]
+		
+		Supported commands:
+		/service/tools/serial/connect [port] [baud]
+		/service/tools/serial/[port]/terminator [char]
+		/service/tools/serial/[port]/listen [pattern (optional)]
+		/service/tools/serial/[port]/stoplisten [pattern (optional)]
+		/service/tools/serial/[port]/write [value]
+		-->
+		<Service enabled="true" name="serial" type="netlab.hub.plugins.tools.serial.SerialService">
+			<Description>Enables raw serial communication with a device.</Description>
+		</Service>
+		
+		
+		<!-- 
+		=======================
+		Hello, world
+		=======================	
+		Command format: /service/tools/hello/say [name]
+		-->
+		<Service enabled="true" name="hello" type="netlab.hub.plugins.tools.utility.HelloWorldService">
+			<Description>Hello World</Description>
+		</Service>
+		
+	</Services>
+
+</PlugIn>

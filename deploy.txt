@@ -1,0 +1,26 @@
+The Ant build scripts will deploy two versions of the Hub: a core GUI-less java app 
+and a Processing-based standalone app. The build sequence involves deploying the
+core GUI-less app (build-core.xml), deploying the sketch to Processing (deploy-sketch.xml),
+opening Processing and exporting the standlone apps, and deploying the standalone
+apps created by Processing's export (deploy-applications.xml).
+
+
+To deploy a full version of the Hub with plugins:
+
+1. 	Modify the version number and build date in the core Hub conf/hub.properties file.
+
+2.  Run the build-core.xml Ant script. This will deploy the core Hub application files to the local build folder.
+	The deployed folder will be named with the version number and build date. A zip file will be created.
+
+3. 	Run the deploy-sketch.xml Ant script. This will copy the newest Hub application files and supporting folders to the 
+	build/processing folder and deploy the "NETLabHub_runner" sketch to the local Processing sketchbook.
+
+4. 	Open the Processing sketch "NETLabHub_runner" and choose File > Export Application. 
+	(This will create the standalone apps in the corresponding folders in the sketch folder.)
+	
+5. 	Run the deploy-applications.xml Ant script. This will copy all support folders into each exported standalone app folder.
+	Finally, it will deploy the application folders for each platform to the build/applications folder.
+
+6.	Zip the build/applications folders and distribute the zip files for the GUI-less Hub created in step 2 and 
+	the standalone desktop apps created in step 5. Note that zip needs to be done manually because the Ant zip task
+	does not preserve file permissions.

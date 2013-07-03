@@ -1,0 +1,126 @@
+<!DOCTYPE PlugIn>
+<PlugIn version="core">
+
+	<Services>
+
+		<!-- 
+		**************************************************
+		USAGE
+		**************************************************
+		
+		Example 1 - write to digital output 3 on a Make Controller
+		with IP address 192.168.1.100:10000:
+		
+			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/192.168.1.100:10000/digitalout/3/value 1
+		
+		Example 2 - do a one=time read of the analog input pin 7 on a Make controller
+		at network address 192.168.1.100:10000
+		
+			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/listen /analogin/7/value 10000
+			/service/osc/reader-writer/{192.168.1.100:10000}/analogin/7/value
+		
+		Example 3 - read stream of all messages matching the pattern "/analogin/7/value" 
+		received on port 30000 from an OSC device at network address 
+		192.168.1.100:10000 (return messages at a max rate of 5 samples per second):
+		
+			/service/osc/reader-writer/connect 192.168.1.100:10000 30000
+			/service/osc/reader-writer/listen /analogin/7/value 30000 1 5
+			
+		
+		**************************************************
+		SUPPORTED COMMANDS
+		**************************************************
+		
+		Note: the /connect command must be sent before any others
+		
+		*************************
+		/service/osc/[servicename]/connect [ip:sendport] [receiveport (optional - defaults to sendport)]
+		
+			Returns: N/A
+			Connects to an OSC device. Send port is used for receiving if no receiveport specified.
+			Sending this command when the service is already connected will automatically close
+			the existing connection and re-open a new one. Issuing the /connect command to a currently 
+			connected device will remove all current listeners and stop any polling before reconnecting.
+			NOTE: For now, if using the Make Controller then the receiveport and the port in the deviceaddress MUST BE THE SAME.
+			See http://www.makingthings.com/ref/firmware/html/group___network_o_s_c.html (osc_udp_port property)
+			
+			Example:
+				/service/osc/reader-writer/connect 192.168.1.100:10000
+				/service/osc/reader-writer/connect 192.168.1.100:10000 20000
+			
+		*************************
+		/service/osc/[servicename]/listen [pattern] [inputport] [1 | 0 (optional)] [rate (optional)]
+		
+			Returns: N/A
+			Comment: Asks the service to listen to message matching a given pattern. If argument 2
+			is non-zero then an autopoll thread will be started at the specified sample rate (in samples per second).
+			The autopoll option is useful for devices such as a Make controller that require polling in
+			order to return values.
+			Example:
+				/service/osc/polling-reader/listen /analogin/7/value 20000
+				/service/osc/polling-reader/listen /analogin/7/value 20000 1 10
+		
+		*************************
+		Command: /service/osc/[servicename]
+		Returns: Nothing
+		Comment: Simply starts the service without doing anything else (see example below)
+		Example: 
+			/service/osc/reader-writer
+		
+		*************************
+		Command: /service/osc/[servicename]/[device ip:port]/[osc command path supported by device]
+		Returns: depends on command
+		Comment: Sends everything after [device ip:port] to the device
+		Example: 
+			/service/osc/reader-writer/192.168.1.100:10000/digitalin/0/value (sends /digitalin/0/value to the device 192.168.1.100:10000)
+		
+		-->
+		
+		<!--
+		//////////////////////////////////
+		Generic OSC services
+		//////////////////////////////////
+		 -->
+		 
+		<Service enabled="true" name="reader-writer" type="netlab.hub.plugins.osc.OSCService">
+			<Description>
+				Service for generic writing to and reading from an OSC device. Returns
+				the OSC message returned by the device, with the full service path prepended.
+				To return the raw OSC string sent by the device, set the enabled flag of the 
+				ServicePathPrefix output filter to false.
+			</Description>
+		</Service>
+		
+		<!--
+		//////////////////////////////////
+		Make Controller examples showing
+		auto-config possibilities
+		//////////////////////////////////
+		 -->
+		
+		<!-- Connects to a Make Controller and waits for client messages -->
+		<Service enabled="false" name="make-reader-writer" type="netlab.hub.plugins.osc.OSCService">
+			<Description>Talk to a Make Controller at a specified network address</Description>
+			<StartupMessages>
+				<Message>/connect 192.168.5.200:10000</Message>
+			</StartupMessages>
+		</Service>
+		
+		<!-- 
+		Connects to a Make Controller immediately starts polling analog input 1 
+		at a sample rate of 5 samples per second.
+		Send "/service/osc/make-analogin-7-polling-reader" message to start it.
+		-->
+		<Service enabled="false" name="make-analogin-7-polling-reader" type="netlab.hub.plugins.osc.OSCService">
+			<Description>Continuously read from analogin 7 on a Make Controller</Description>
+			<StartupMessages>
+				<Message>/connect 192.168.5.200:10000</Message>
+				<Message>/listen /analogin/7/value 1 5</Message>
+			</StartupMessages>
+		</Service>
+		
+	</Services>
+	
+</PlugIn>
