@@ -178,6 +178,10 @@ public class XBeeService extends Service {
 }
 
 
+/**
+ * Helper class for parsing values from a ServiceMessage.
+ *
+ */
 class ReadWriteRequest {
 	
 	ServiceMessage request;
