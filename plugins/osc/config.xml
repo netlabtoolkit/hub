@@ -27,6 +27,16 @@
 		
 			/service/osc/reader-writer/connect 192.168.1.100:10000 30000
 			/service/osc/reader-writer/listen /analogin/7/value 30000 1 5
+		
+		Example 4 - read stream of all messages matching the pattern "/analogin/7/value" 
+		received from a Make Controller at network address 192.168.1.100:10000.
+		Most OSC devices will not require polling because they send messages
+		to registered listeners on their own. The Make Controller requires polling.
+		See commands.txt in the Hub root directory for more information on polling.
+		
+			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/listen /analogin/7/value 10000
+			/service/osc/reader-writer/poll /{192.168.1.100:10000}/analogin/7/value 10000
 			
 		
 		**************************************************
@@ -51,16 +61,12 @@
 				/service/osc/reader-writer/connect 192.168.1.100:10000 20000
 			
 		*************************
-		/service/osc/[servicename]/listen [pattern] [inputport] [1 | 0 (optional)] [rate (optional)]
+		/service/osc/[servicename]/listen [pattern] [inputport]
 		
 			Returns: N/A
-			Comment: Asks the service to listen to message matching a given pattern. If argument 2
-			is non-zero then an autopoll thread will be started at the specified sample rate (in samples per second).
-			The autopoll option is useful for devices such as a Make controller that require polling in
-			order to return values.
+			Comment: Asks the service to listen to incoming messages on a specified port matching a given pattern.
 			Example:
 				/service/osc/polling-reader/listen /analogin/7/value 20000
-				/service/osc/polling-reader/listen /analogin/7/value 20000 1 10
 		
 		*************************
 		Command: /service/osc/[servicename]
@@ -109,7 +115,7 @@
 		</Service>
 		
 		<!-- 
-		Connects to a Make Controller immediately starts polling analog input 1 
+		Connects to a Make Controller and immediately starts polling analog input 7 
 		at a sample rate of 5 samples per second.
 		Send "/service/osc/make-analogin-7-polling-reader" message to start it.
 		-->
@@ -117,7 +123,8 @@
 			<Description>Continuously read from analogin 7 on a Make Controller</Description>
 			<StartupMessages>
 				<Message>/connect 192.168.5.200:10000</Message>
-				<Message>/listen /analogin/7/value 1 5</Message>
+				<Message>/listen /analogin/7/value</Message>
+				<Message>/poll /192.168.5.200:10000/analogin/7/value 0 5</Message>
 			</StartupMessages>
 		</Service>
 		

@@ -120,8 +120,8 @@
 		<Service enabled="true" name="file-io" type="netlab.hub.plugins.tools.fileio.FileIOService">
 			<Description>File server that returns the file contents</Description>
 			<OutputFilters>
-				<!--  Uncomment the next line to return only the bare file contents without the OSC wrapper -->
-				<!-- <Filter type="netlab.hub.filters.ExtractRawArgumentValue" enabled="true" />  -->
+				<!--  Enable the following filter to return only the bare file contents without the OSC wrapper -->
+				<Filter type="netlab.hub.filters.ExtractRawArgumentValue" enabled="false" />
 			</OutputFilters>
 		</Service>
 		
