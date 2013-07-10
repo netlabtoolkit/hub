@@ -11,9 +11,9 @@
 	
 	<!-- <tstamp><format property='build.time' pattern='yyyy-MM-dd'/></tstamp> -->
 	<property name="sketch.name" value="NETLabHub_runner" />
-	<property name="deploy.dir" value="build/processing/${sketch.name}/${app.version}-${app.build}"/>
+	<property name="deploy.dir" value="build/processing"/>
 	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
-	<property name="core.source.dir" value="build/core/netlabhub-${app.version}-${app.build}" />
+	<property name="core.source.dir" value="build/core" />
 	
 	<!--
 	<timestampselector property="core.source.dir">
@@ -72,7 +72,7 @@
 			<fileset dir="." includes="data/**" />
 		</copy>
 		<copy todir="${deploy.dir}">
-			<fileset dir="." includes="commands.txt" />
+			<fileset dir="." includes="*.txt *.md" />
 		</copy>
 		<copy todir="${deploy.dir}">
 			<fileset dir="src/processing" includes="${sketch.name}.pde" />
@@ -80,7 +80,7 @@
 		<echo>Hub Processing sketch files deployed to ${user.dir}/${deploy.dir}</echo>
 		
 		<!-- Delete the core source directory because we are finished with it -->
-		<delete dir="${core.source.dir}" />
+		<!-- <delete dir="${core.source.dir}" /> -->
 		
 		<echo>Copying to sketchbook...</echo>
 		<if>

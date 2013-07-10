@@ -9,7 +9,7 @@
 	</taskdef>
 	
 	<tstamp><format property='build.date' pattern='yyyy-MM-dd'/></tstamp>
-	<property name="deploy.dir" value="build/core/${build.version}-${build.date}"/>
+	<property name="deploy.dir" value="build/core"/>
 
 	<target name="deleteDeployDir">		
 		<if>
@@ -39,7 +39,7 @@
 			<fileset dir="." includes="plugins/**" />
 		</copy>
 		<copy todir="${deploy.dir}">
-			<fileset dir="." includes="commands.txt" />
+			<fileset dir="." includes="*.txt *.md" />
 		</copy>
 		
 		<jar destfile="${deploy.dir}/lib/hub.jar" basedir="bin" excludes="netlab/hub/plugins/**" />
@@ -54,13 +54,14 @@
 		<mkdir dir="${deploy.dir}/log" />
 		<touch file="${deploy.dir}/log/hub.log" />
 		
-		<!-- Add the build date to the deployed properties file -->
+		<!-- Add the build information to the deployed properties file -->
 		<propertyfile file="${deploy.dir}/conf/hub.properties">
 		  	<entry key="app.version" value="${build.version}"/>
 			<entry key="app.build" value="${build.date}"/>
 		</propertyfile>
 		
-		<zip destfile="${deploy.dir}/../netlabhub-${build.version}-${build.date}.zip" basedir="${deploy.dir}" />
+		<!--<zip destfile="${deploy.dir}/../netlabhub-${build.version}-${build.date}.zip" basedir="${deploy.dir}" />-->
+		
 		<echo>Core Hub application files deployed to ${user.dir}/${deploy.dir}</echo>
 	</target>
 	

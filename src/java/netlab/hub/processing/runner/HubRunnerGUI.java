@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -70,7 +71,16 @@ public class HubRunnerGUI implements IDataActivityMonitor, ISessionLifecycleMoni
 	
 	public HubRunnerGUI(Hub hub, PApplet parent) {
 		this.hub = hub;
-		this.mainWindow = new MainWindow(parent);
+		// Special handling for toolbar icon for Windows. 
+		// See http://wiki.processing.org/w/Export_Info_and_Tips
+		if (PApplet.platform == PApplet.WINDOWS) {
+			File winIcon = new File(new File(hub.getRootDir(), "data"), "iconsmall.png");
+			ImageIcon winTitlebaricon = new ImageIcon(parent.loadBytes(winIcon.getAbsolutePath()));
+			parent.frame.setIconImage(winTitlebaricon.getImage());
+		}
+		File mainIconFile = new File(new File(hub.getRootDir(), "data"), "iconlarge.jpg");
+		PImage mainIconImg = parent.loadImage(mainIconFile.getAbsolutePath());
+		this.mainWindow = new MainWindow(mainIconImg, parent);
 		this.logWindow = new LogWindow();
 		HubRunnerGUI.parent = parent;
 		GUILogger.gui = new IGUILogger() {
@@ -180,7 +190,7 @@ class MainWindow {
 	IconCanvas icon;
 	Textarea logPanel;
 	
-	public MainWindow(PApplet parent) {
+	public MainWindow(PImage iconImg, PApplet parent) {
 		//parent.size(365, 350);
 		parent.size(750, 350);
 		controls = new ControlP5(parent);
@@ -297,8 +307,8 @@ class MainWindow {
 		.setFont(new ControlFont(pfont, 13))
 		.hide()
 		;
-		
-		icon = new IconCanvas(50, 80);
+
+		icon = new IconCanvas(50, 80, iconImg);
 		controls.addCanvas(icon);
 		
 		setStatus("Starting...");
@@ -377,9 +387,10 @@ class IconCanvas extends ControlWindowCanvas {
 	PImage img = null;
 	boolean visible = true;
 	int x, y;
-	public IconCanvas(int x, int y) {
+	public IconCanvas(int x, int y, PImage img) {
 		this.x = x;
 		this.y = y;
+		this.img = img;
 	}
 	public void show() {
 		visible = true;
@@ -388,16 +399,6 @@ class IconCanvas extends ControlWindowCanvas {
 		visible = false;
 	}
 	public void draw(PApplet parent) {
-		if (img == null) {
-			String base = parent.sketchPath;
-			// If the applet is running from an IDE, the root will be "bin" so
-			// move up one directory to access the true sketchPath as it is
-			// defined in Processing
-			if (base.endsWith(File.separator+"bin")) {
-				base = base+File.separator+"..";
-			}
-			img = parent.loadImage(base+File.separator+"data"+File.separator+"netlabhubiconcropped.jpg");
-		}
 		if (visible)
 			parent.image(img, x, y);
 	}

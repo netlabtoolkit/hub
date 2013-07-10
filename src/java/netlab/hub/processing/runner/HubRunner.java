@@ -35,6 +35,8 @@ import controlP5.ControlEvent;
  */
 public class HubRunner {
 	
+	public static String base;
+	
 	PApplet parent;
 	Hub hub;
 	HubRunnerGUI gui;
@@ -44,7 +46,7 @@ public class HubRunner {
 		this.parent = parent;
 		
 		// Determine the file system path to the current application base
-		String base = System.getProperty("netlab.hub.base");
+		base = System.getProperty("netlab.hub.base");
 		if (base == null) {
 			base = parent.sketchPath(".");
 		}

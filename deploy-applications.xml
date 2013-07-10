@@ -27,7 +27,7 @@
 	<property name="sketch.name" value="NETLabHub_runner" />
 	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
 	<property name="sketch.dir" value="${sketchbook.dir}/${sketch.name}"/>
-	<property name="build.dir" value="build/applications/${app.version}-${app.build}"/>
+	<property name="build.dir" value="build/applications"/>
 	
 	<target name="deleteBuildDir">		
 		<if>
@@ -51,7 +51,11 @@
 				</dirset>
 			</path>
 		</foreach>
-		<!-- Move the zip archives to the build directory -->
+		<!-- Copy macosx icon -->
+		<copy todir="${sketch.dir}/application.macosx/NETLabHub_runner.app/Contents/Resources">
+			<fileset dir="${sketch.dir}/data" includes="sketch.icns" />
+		</copy>
+		<!-- Move to build directory -->
 		<mkdir dir="${build.dir}" />
 		<move todir="${build.dir}">
 			<fileset dir="${sketch.dir}" includes="application.*/**" />
@@ -63,7 +67,7 @@
 		<mkdir dir="${theAppDir}/log" />
 		<touch file="${theAppDir}/log/hub.log" />
 		<copy todir="${theAppDir}">
-			<fileset dir="${sketch.dir}" includes="plugins/** conf/** data/** commands.txt" excludes=".DS_Store"/>
+			<fileset dir="${sketch.dir}" includes="plugins/** conf/** data/** *.txt *.md" excludes=".DS_Store"/>
 		</copy>
 		<delete>
 			<fileset dir="${theAppDir}" includes="**/source/*" />
