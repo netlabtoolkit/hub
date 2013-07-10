@@ -7,7 +7,7 @@ apps created by Processing's export (deploy-applications.xml).
 
 To deploy a full version of the Hub with plugins:
 
-1. 	Modify the version number and build date in the core Hub conf/hub.properties file.
+1. 	Modify the version number property at the head of the build-core.xml Ant script.
 
 2.  Run the build-core.xml Ant script. This will deploy the core Hub application files to the local build folder.
 	The deployed folder will be named with the version number and build date. A zip file will be created.

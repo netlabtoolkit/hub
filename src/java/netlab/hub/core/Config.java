@@ -59,11 +59,23 @@ public class Config {
 	}
 	
 	public static String getAppVersion() {
-		return props.getProperty("app.version");
+		// The build script will add the version property so return
+		// a dummy value if running from dev
+		if (props.containsKey("app.version")) {
+			return props.getProperty("app.version");
+		} else {
+			return "unspecified";
+		}
 	}
 	
 	public static String getAppBuild() {
-		return props.getProperty("app.build");
+		// The build script will add the build property so return
+		// a dummy value if running from dev
+		if (props.containsKey("app.build")) {
+			return props.getProperty("app.build");
+		} else {
+			return "unspecified";
+		}
 	}
 	
 	public static String getAppMetadata() {
