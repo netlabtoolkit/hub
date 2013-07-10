@@ -1,4 +1,6 @@
-# Release 5.0.0
+# Release notes
+
+## Release 5.0.0
 - Added web admin interface to Hub
 - Using improved Webbit web sockets library
 - Added support for Arduino Mega and other Arduinos
