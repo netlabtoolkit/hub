@@ -26,38 +26,34 @@ import processing.core.PApplet;
 import controlP5.ControlEvent;
 
 /**
- * A convenience wrapper around the netlab.hub.core.Hub class that 
- * allows for running the Hub from inside a Processing sketch.
- * This class configures the Hub, provides methods for starting
- * and stopping the Hub, and attaches a GUI.
- *
+ * Applet that launches the Hub in a Processing environment. It is used
+ * primarily for testing, but this code could be dropped into a 
+ * Processing sketch to launch the Hub. We use this Applet as the 
+ * launcher from Eclipse for development when we want to test the
+ * Hub inside the Processing stack rather than as a bare Hub instance.
+ * <p />
+ * This Applet simply dispatches all of its Hub functionality to a 
+ * HubRunner instance, which takes care of managing the Hub.
  */
-public class HubRunner {
+@SuppressWarnings("serial")
+public class DevLauncherApplet extends PApplet {
 	
-	public static String base;
-	
-	PApplet parent;
 	Hub hub;
-	HubRunnerGUI gui;
-		
-	public HubRunner(PApplet parent) {
-		
-		this.parent = parent;
-		
-		// Determine the file system path to the current application base
-		base = System.getProperty("netlab.hub.base");
-		if (base == null) {
-			base = parent.sketchPath(".");
-		}
-		
+	HubGUI gui;
+	
+	
+	public void setup() {
+		frameRate(10); // Looping is needed for ControlP5 GUI, but 10 fps is plenty.
+
 		// Create the Hub instance
+		String base = System.getProperty("netlab.hub.base");
+		if (base == null) {
+			base = sketchPath(".");
+		}
 		hub = new Hub(new File(base));
 		
 		// Create the gui and attach it to the hub
-		gui = new HubRunnerGUI(hub, parent);
-		hub.setHubLifecycleMonitor(gui);
-		hub.setDataActivityMonitor(gui);
-		hub.setSessionLifecycleMonitor(gui);
+		gui = new HubGUI(hub, this);
 		
 		// Start the Hub in a new thread so that Processing can move on
 		// and start calling the "draw" method during Hub init.
@@ -66,13 +62,12 @@ public class HubRunner {
 				hub.start();
 			}
 		}, "Hub-launcher").start();
-	
 	}
 	
 	public void draw() {
-		// We don't do anything here, but we need to loop in order that
-		// ControlP5 can update the user interface.
-		parent.background(0);
+		// We don't do anything here, but we need to loop in order for
+		// the GUI can update the user interface and respond to events.
+		background(0);
 	}
 	
 	public void controlEvent(ControlEvent e) {
@@ -80,11 +75,8 @@ public class HubRunner {
 	}
 	
 	public void stop() {
-		if (hub != null) {
+	  	if (hub != null) {
 			hub.quit();
 		}
 	}
 }
-
-
-

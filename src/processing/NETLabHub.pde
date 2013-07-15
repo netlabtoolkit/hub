@@ -18,31 +18,56 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /**
- * This Processing sketch launches the HubRunner and provides it
+ * This Processing sketch launches the Hub, attaches a GUI with
  * with access to all of the Processing functionality, including
  * access to serial port functionality through the processing.serial.* library.
+ * This sketch is for generating the standalone applications only.
+ * To communicate with the Hub from a Processing sketch, use the 
+ * netlab.hub.processing.client.HubClient class instead.
+ *
  */
-import netlab.hub.processing.runner.HubRunner;
+import netlab.hub.processing.runner.*;
 import controlP5.*;
-//import processing.net.*;
 import processing.serial.*;
+import java.io.File;
 
-HubRunner hubRunner;
+Hub hub;
+HubGUI gui;
 
 void setup() {
+
   frameRate(10); // Looping is needed for ControlP5 GUI, but 10 fps is plenty.
-  hubRunner = new HubRunner(this);
+
+  // Create the Hub instance
+  String base = System.getProperty("netlab.hub.base");
+  if (base == null) {
+    base = sketchPath(".");
+  }
+  hub = new Hub(new File(base));
+
+  // Create the gui and attach it to the hub
+  gui = new HubGUI(hub, this);
+
+  // Start the Hub in a new thread so that Processing can move on
+  // and start calling the "draw" method during Hub init.
+  new Thread(new Runnable() {
+    public void run() {
+      hub.start();
+    }
+  }
+  , "Hub-launcher").start();
 }
 
 void draw() {
-  hubRunner.draw();
+  background(0);
 }
 
 void stop() {
-  hubRunner.stop();
+  if (hub != null) {
+    hub.quit();
+  }
 }
 
 public void controlEvent(ControlEvent e) {
-  hubRunner.controlEvent(e);
+  gui.controlEvent(e);
 }
-

@@ -59,7 +59,7 @@ import controlP5.Textarea;
 import controlP5.Textfield;
 import controlP5.Textlabel;
 
-public class HubRunnerGUI implements IDataActivityMonitor, ISessionLifecycleMonitor, IHubLifecycleMonitor {
+public class HubGUI implements IDataActivityMonitor, ISessionLifecycleMonitor, IHubLifecycleMonitor {
 	
 	public static PApplet parent; // Make the instance available to anyone who needs it (eg serial port implementation)
 	
@@ -69,8 +69,11 @@ public class HubRunnerGUI implements IDataActivityMonitor, ISessionLifecycleMoni
 	
 	List<String> clients = new ArrayList<String>();
 	
-	public HubRunnerGUI(Hub hub, PApplet parent) {
+	public HubGUI(Hub hub, PApplet parent) {
 		this.hub = hub;
+		hub.setHubLifecycleMonitor(this);
+		hub.setDataActivityMonitor(this);
+		hub.setSessionLifecycleMonitor(this);
 		// Special handling for toolbar icon for Windows. 
 		// See http://wiki.processing.org/w/Export_Info_and_Tips
 		if (PApplet.platform == PApplet.WINDOWS) {
@@ -82,7 +85,7 @@ public class HubRunnerGUI implements IDataActivityMonitor, ISessionLifecycleMoni
 		PImage mainIconImg = parent.loadImage(mainIconFile.getAbsolutePath());
 		this.mainWindow = new MainWindow(mainIconImg, parent);
 		this.logWindow = new LogWindow();
-		HubRunnerGUI.parent = parent;
+		HubGUI.parent = parent;
 		GUILogger.gui = new IGUILogger() {
 			public void print(String msg) {
 				logWindow.print(msg);

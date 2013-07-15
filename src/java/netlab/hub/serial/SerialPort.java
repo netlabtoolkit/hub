@@ -22,7 +22,7 @@ package netlab.hub.serial;
 import java.util.ArrayList;
 import java.util.List;
 
-import netlab.hub.processing.runner.HubRunnerGUI;
+import netlab.hub.processing.runner.HubGUI;
 import netlab.hub.processing.runner.MacSerialFixer;
 import netlab.hub.util.ArrayUtils;
 import netlab.hub.util.Logger;
@@ -54,7 +54,7 @@ public class SerialPort {
 	public SerialPort(SerialEventHandler eventHandler, String name, int rate) throws SerialException {
 		this.self = this;
 		if (MacSerialFixer.isNeeded()) {
-			new MacSerialFixer(HubRunnerGUI.parent).run(); // Run in this thread so dialog box will block execution
+			new MacSerialFixer(HubGUI.parent).run(); // Run in this thread so dialog box will block execution
 			String msg = "Serial port configuration fix is needed by the Hub - "+
 							"Please check the Hub application to run the fix and try connecting again.";
 			Logger.info(msg);
