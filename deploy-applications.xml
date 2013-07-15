@@ -24,7 +24,7 @@
 	<!-- Load the Hub properties file so we can get the version info -->
 	<loadproperties srcFile="conf/hub.properties" />
 
-	<property name="sketch.name" value="NETLabHub_runner" />
+	<property name="sketch.name" value="NETLabHub" />
 	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
 	<property name="sketch.dir" value="${sketchbook.dir}/${sketch.name}"/>
 	<property name="build.dir" value="build/applications"/>
@@ -52,7 +52,7 @@
 			</path>
 		</foreach>
 		<!-- Copy macosx icon -->
-		<copy todir="${sketch.dir}/application.macosx/NETLabHub_runner.app/Contents/Resources">
+		<copy todir="${sketch.dir}/application.macosx/NETLabHub.app/Contents/Resources">
 			<fileset dir="${sketch.dir}/data" includes="sketch.icns" />
 		</copy>
 		<!-- Move to build directory -->

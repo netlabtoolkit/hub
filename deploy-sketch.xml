@@ -10,7 +10,7 @@
 	<loadproperties srcFile="conf/hub.properties" />
 	
 	<!-- <tstamp><format property='build.time' pattern='yyyy-MM-dd'/></tstamp> -->
-	<property name="sketch.name" value="NETLabHub_runner" />
+	<property name="sketch.name" value="NETLabHub" />
 	<property name="deploy.dir" value="build/processing"/>
 	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
 	<property name="core.source.dir" value="build/core" />
