@@ -19,7 +19,7 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This Processing sketch launches the HubRunner and provides it
- * will access to all of the Processing functionality, including
+ * with access to all of the Processing functionality, including
  * access to serial port functionality through the processing.serial.* library.
  */
 import netlab.hub.processing.runner.HubRunner;
