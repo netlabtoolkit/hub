@@ -21,6 +21,8 @@ package netlab.hub.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 
@@ -232,6 +234,8 @@ public class Hub {
 				}
 			}
 			
+			callHome();
+			
 			ThreadUtil.pause(500);
 			Logger.info("Hub successfully started.");
 			running = true;
@@ -244,6 +248,21 @@ public class Hub {
 			Logger.error("Error starting Hub: "+e);
 			monitor.initializationFailed();
 			return;
+		}
+	}
+	
+	public String callHome() {
+		try {
+			if ("unspecified".equals(Config.getAppVersion())) {
+				return null; // We are in dev mode
+			}
+			String version = URLEncoder.encode(Config.getAppVersion()+"-"+Config.getAppBuild(), "UTF-8");
+			URL url = new URL(Config.getCallHomeUrl() + "?hub_version="+version);
+			Logger.debug("Calling home to URL "+url);
+			return NetworkUtils.readFromUrl(url);
+		} catch (Exception e) {
+			Logger.error("Illegal callback URL: "+Config.getCallHomeUrl());
+			return null;
 		}
 	}
 	
@@ -280,5 +299,7 @@ public class Hub {
 		Logger.info("Goodbye.");
 		System.exit(0);
 	}
+	
+	
 
 }

@@ -111,7 +111,7 @@ public class Config {
 	}
 	
 	public static String getCallHomeUrl() {
-		return getProperty("server.callhomeurl");
+		return getProperty("server.callhomeurl"); 
 	}
 	
 	public static boolean hasProperty(String prop) {
