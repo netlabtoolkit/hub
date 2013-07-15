@@ -115,7 +115,7 @@ public class ArduinoService extends Service {
 					boards.put(portNamePattern, arduino); // Also store the board reference under the port name pattern
 				}
 			}
-			response.write(new String[] {"OK", arduino.getSerialPortName()});
+			response.write(new String[] {"OK", arduino.getPortName()});
 		} catch (Exception e) {
 			response.write(new String[] {"FAIL", e.toString()});
 		}
@@ -191,14 +191,10 @@ public class ArduinoService extends Service {
 	 * @see netlab.hub.core.Service#dispose()
 	 */
 	public void dispose() throws ServiceException {
-		// The Arduino Processing library registers dispose with the 
-		// Processing applet itself, but we should still explicitly
-		// release ports on shutdown just in case.
-		for (Iterator<String> it=boards.keySet().iterator(); it.hasNext();) {
-			String key = it.next();
-			boards.get(key).dispose();
-			boards.remove(key);
+		for (Iterator<Arduino> it=boards.values().iterator(); it.hasNext();) {
+			it.next().dispose();
 		}
+		boards.clear();
 	}
 	
 }

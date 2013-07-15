@@ -89,12 +89,6 @@ public class Dispatcher {
 					processing = false;
 					ThreadUtil.pause(10); // Tiny delay, so we don't hog the CPU. Is this needed?
 				}
-				Logger.debug("Shutting down services...");
-				try {
-					ServiceRegistry.disposeAll();
-				} catch (ServiceException e) {
-					Logger.error("Error stopping all services", e);
-				}
 			}
 		}, "Hub-Dispatcher").start();
 	}

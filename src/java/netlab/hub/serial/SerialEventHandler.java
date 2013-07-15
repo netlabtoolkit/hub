@@ -19,18 +19,6 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 package netlab.hub.serial;
 
-/**
- * Implementation-neutral interface for classes that
- * will respond to input received on the serial port.
- */
 public interface SerialEventHandler {
-	
-	/**
-	 * Called whenever input data is available for reading
-	 * from the serial port.
-	 * 
-	 * @param port the SerialPort that generated the event
-	 */
-	public void serialEvent(SerialPort port);
-
+	public void serialEvent(SerialPort serial);
 }

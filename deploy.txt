@@ -24,3 +24,7 @@ To deploy a full version of the Hub with plugins:
 6.	Zip the build/applications folders and distribute the zip files for the GUI-less Hub created in step 2 and 
 	the standalone desktop apps created in step 5. Note that zip needs to be done manually because the Ant zip task
 	does not preserve file permissions.
+	
+Note: Mac icon is copied to the .app bundle by the Ant script in step 5. Windows icon is set at 
+runtime in the Java app, but desktop icon needs to be set from Windows using Resource Hacker
+(see http://www.infotechywiz.com/2012/06/how-to-modify-exe-files.html)

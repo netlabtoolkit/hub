@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import netlab.hub.admin.AdminServer;
-import netlab.hub.serial.SerialPort;
 import netlab.hub.util.ClasspathManager;
 import netlab.hub.util.Logger;
 import netlab.hub.util.NetworkUtils;
@@ -62,7 +61,9 @@ public class Hub {
 	boolean running = false;
 	
 	public Hub() throws IOException {
-		this(new File(new File(".").getCanonicalPath()));
+		File rootDir = new File("");
+		instance = this;
+		configure(rootDir.getAbsoluteFile());
 	}
 	
 	public Hub(File rootDir) {
@@ -144,7 +145,6 @@ public class Hub {
 			}
 			ThreadUtil.pause(100);
 			
-			//Logger.info("#############################################");
 			String metadata = "Starting "+Config.getAppName()+"" +
 					" version "+Config.getAppVersion()+" (build "+Config.getAppBuild()+")";
 			Logger.info(metadata);
@@ -154,14 +154,6 @@ public class Hub {
 				adminServer = new AdminServer(adminPort, this);
 				adminServer.start();
 				Logger.info("Admin server running at http://"+NetworkUtils.getLocalMachineAddress()+":"+adminPort);
-			}
-			
-			// Report on serial port implementation, if any
-			String serialPortImplClass = System.getProperty(SerialPort.SERIAL_PORT_FACTORY_IMPL_CLASS);
-			if (serialPortImplClass != null) {
-				Logger.debug("Using serial port implementation ["+serialPortImplClass+"]");
-			} else {
-				Logger.warn("No serial port implementation available. Services requiring serial ports will not work correctly.");
 			}
 			
 			monitor.displayStatus("Loading plugins...");
@@ -255,7 +247,7 @@ public class Hub {
 		}
 	}
 	
-	private void shutdown() {
+	private synchronized void shutdown() {
 		if (running) {
 			Logger.debug("Shutting down the Hub...");
 			if (server != null) {
@@ -264,13 +256,17 @@ public class Hub {
 			if (wsServer != null) {
 				wsServer.stop();
 			}
+			Logger.debug("Shutting down services...");
 			ServiceConfig.clearAll();
 			try {
-				ServiceRegistry.disposeAll();
+				for (Iterator<Service> it=ServiceRegistry.getAll().iterator(); it.hasNext();) {
+					it.next().dispose();
+				}
+				ServiceRegistry.clear();
 			} catch (ServiceException e) {
 				Logger.error("Error shutting down service registry", e);
 			}
-			SerialPort.disposeAll();
+			Logger.debug("Services shut down.");
 		}
 		Logger.debug("Hub shut down.");
 		running = false;

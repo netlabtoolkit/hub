@@ -22,7 +22,6 @@ package netlab.hub.processing.runner;
 import java.io.File;
 
 import netlab.hub.core.Hub;
-import netlab.hub.serial.SerialPort;
 import processing.core.PApplet;
 import controlP5.ControlEvent;
 
@@ -50,10 +49,6 @@ public class HubRunner {
 		if (base == null) {
 			base = parent.sketchPath(".");
 		}
-		
-		// Set the serial port implementation to use
-		System.setProperty(SerialPort.SERIAL_PORT_FACTORY_IMPL_CLASS, 
-								"netlab.hub.processing.runner.ProcessingSerialPortFactoryImpl");
 		
 		// Create the Hub instance
 		hub = new Hub(new File(base));

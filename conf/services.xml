@@ -23,23 +23,27 @@
 	using the JoinArguments filter.
 	Service path is /service/custom/hello
 	 -->
+	 <!-- 
 	<Service enabled="true" name="hello" type="netlab.hub.plugins.tools.utility.HelloWorldService">
 		<Description>Hello World</Description>
 		<OutputFilters>
 			<Filter type="netlab.hub.filters.JoinArguments" enabled="true" />
 		</OutputFilters>
 	</Service>
+	 -->
 	
 	<!--  
 	Define a new service by extending the arduino/reader-writer service to automatically
 	connects to the serial port when the service starts.
 	Service path is /service/custom/arduino-autoconnect
 	 -->
+	 <!-- 
 	<Service enabled="false" name="arduino-autoconnect" extends="/service/arduino/reader-writer">
 		<StartupMessages>
 			<Message>nlhubconfig/connect /dev/cu.usb*</Message>
 		</StartupMessages>
 	</Service>
+	 -->
 		
 			
 </Services>

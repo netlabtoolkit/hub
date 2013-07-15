@@ -107,18 +107,21 @@
 		 -->
 		
 		<!-- Connects to a Make Controller and waits for client messages -->
+		<!-- 
 		<Service enabled="false" name="make-reader-writer" type="netlab.hub.plugins.osc.OSCService">
 			<Description>Talk to a Make Controller at a specified network address</Description>
 			<StartupMessages>
 				<Message>/connect 192.168.5.200:10000</Message>
 			</StartupMessages>
 		</Service>
+		 -->
 		
 		<!-- 
 		Connects to a Make Controller and immediately starts polling analog input 7 
 		at a sample rate of 5 samples per second.
 		Send "/service/osc/make-analogin-7-polling-reader" message to start it.
 		-->
+		<!-- 
 		<Service enabled="false" name="make-analogin-7-polling-reader" type="netlab.hub.plugins.osc.OSCService">
 			<Description>Continuously read from analogin 7 on a Make Controller</Description>
 			<StartupMessages>
@@ -127,6 +130,7 @@
 				<Message>/poll /192.168.5.200:10000/analogin/7/value 0 5</Message>
 			</StartupMessages>
 		</Service>
+		 -->
 		
 	</Services>
 	

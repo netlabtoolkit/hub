@@ -38,7 +38,6 @@ import netlab.hub.core.Config;
 import netlab.hub.core.Hub;
 import netlab.hub.core.ServiceConfig;
 import netlab.hub.serial.SerialPort;
-import netlab.hub.serial.SerialException;
 import netlab.hub.util.FileUtils;
 import netlab.hub.util.Logger;
 import netlab.hub.util.NetworkUtils;
@@ -214,13 +213,7 @@ public class AdminServer {
 		
 		html.h2().content("Connected serial devices");
 		html.table();
-		String[] serialDevices;
-		try {
-			serialDevices = SerialPort.list();
-		} catch (SerialException e) {
-			Logger.warn("Unable to list serial devices: "+ e);
-			serialDevices = new String[] {};
-		}
+		String[] serialDevices = SerialPort.list();
 		for (int i=0; i<serialDevices.length; i++) {
 			html.tr().td().write(serialDevices[i])._td()._tr();
 		}

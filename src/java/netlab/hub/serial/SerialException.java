@@ -21,21 +21,13 @@ package netlab.hub.serial;
 
 @SuppressWarnings("serial")
 public class SerialException extends Exception {
-
-	public SerialException() {
-		super();
+	
+	public SerialException(String msg) {
+		super(msg);
 	}
-
-	public SerialException(String message) {
-		super(message);
-	}
-
-	public SerialException(Throwable cause) {
-		super(cause);
-	}
-
-	public SerialException(String message, Throwable cause) {
-		super(message, cause);
+	
+	public SerialException(String msg, Exception cause) {
+		super(msg, cause);
 	}
 
 }

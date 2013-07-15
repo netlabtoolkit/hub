@@ -46,7 +46,9 @@ public class Config {
 	public static void load(File rootDir) throws FileNotFoundException, IOException {
 		root = rootDir;
 		props = new Properties();
-		FileInputStream in = new FileInputStream(new File(new File(rootDir, "conf"), "hub.properties"));
+		File confDir = new File(rootDir.getAbsolutePath()+File.separator+"conf");
+		File propsFile = new File(confDir, "hub.properties");
+		FileInputStream in = new FileInputStream(propsFile);
 		try {
 			props.load(in);
 		} finally {

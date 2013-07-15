@@ -168,7 +168,7 @@
 		Command format: /service/tools/hello/say [name]
 		-->
 		<Service enabled="true" name="hello" type="netlab.hub.plugins.tools.utility.HelloWorldService">
-			<Description>Hello World</Description>
+			<Description>Hello World (for testing communications with the Hub)</Description>
 		</Service>
 		
 	</Services>

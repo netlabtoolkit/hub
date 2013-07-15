@@ -30,7 +30,6 @@ import netlab.hub.core.ServiceException;
 import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
 import netlab.hub.serial.SerialEventHandler;
-import netlab.hub.serial.SerialException;
 import netlab.hub.serial.SerialPort;
 import netlab.hub.util.Logger;
 import netlab.hub.util.WildcardPatternMatch;
@@ -104,14 +103,14 @@ public class SerialService extends Service implements SerialEventHandler {
 	public void commandConnect(ServiceMessage request, ServiceResponse response) throws ServiceException {
 		try {
 			String portName = getPortName(request.getArgument(0));
-			SerialPort port = ports.get(portName);
-			if (port == null) {
+			SerialPort serial = ports.get(portName);
+			if (serial == null) {
 				int baud = request.argInt(1, 9600);
-				port = SerialPort.open(this, portName, baud);
-				port.bufferUntil(terminator);
-				ports.put(portName, port);
+				serial = new SerialPort(this, portName, baud);
+				serial.bufferUntil(terminator);
+				ports.put(portName, serial);
 			}
-			response.write(new String[]{"OK", port.getName()});
+			response.write(new String[]{"OK", serial.getName()});
 		} catch (Exception e) {
 			Logger.error("Error connecting to serial port", e);
 			response.write(new String[] {"FAIL", e.toString()});
@@ -126,9 +125,9 @@ public class SerialService extends Service implements SerialEventHandler {
 	public void commandTerminator(ServiceMessage request, ServiceResponse response) throws ServiceException {
 		String portName = getPortName(request.getPathElement(-1));
 		this.terminator = request.argInt(0, this.terminator);
-		SerialPort port = ports.get(portName);
-		if (port != null) {
-			port.bufferUntil(terminator);
+		SerialPort serial = ports.get(portName);
+		if (serial != null) {
+			serial.bufferUntil(terminator);
 		}
 	}
 	
@@ -189,9 +188,9 @@ public class SerialService extends Service implements SerialEventHandler {
 		}
 		if (Logger.isDebug()) // Avoid extra String processing if not in debug mode
 			Logger.debug("Sending ["+request.getArgument(0)+"] to device "+portName);
-		SerialPort port = getPort(portName);
-		port.write(request.getArgument(0));
-		port.write(terminator);
+		SerialPort serial = getPort(portName);
+		serial.write(request.getArgument(0));
+		serial.write(terminator);
 	}
 	
 	/* (non-Javadoc)
@@ -241,11 +240,7 @@ public class SerialService extends Service implements SerialEventHandler {
 	 */
 	public String getPortName(String pattern) throws ServiceException {
 		String[] portNames = null;
-		try {
-			portNames = SerialPort.list(pattern);
-		} catch (SerialException e) {
-			throw new ServiceException("Error listing serial ports", e);
-		}
+		portNames = SerialPort.list(pattern);
 		if (portNames.length == 0) {
 			throw new ServiceException("No serial port found matching name pattern ["+pattern+"]");
 		}
@@ -258,11 +253,21 @@ public class SerialService extends Service implements SerialEventHandler {
 	 * @throws ServiceException
 	 */
 	public SerialPort getPort(String portName) throws ServiceException {
-		SerialPort port = ports.get(portName);
-		if (port == null) {
+		SerialPort serial = ports.get(portName);
+		if (serial == null) {
 			throw new ServiceException("No serial port connection. Did you send the /connect command first?");
 		}
-		return port;
+		return serial;
+	}
+	
+	/* (non-Javadoc)
+	 * @see netlab.hub.core.Service#dispose()
+	 */
+	public void dispose() throws ServiceException {
+		for (Iterator<SerialPort> it=ports.values().iterator(); it.hasNext();) {
+			it.next().dispose();
+		}
+		ports.clear();
 	}
 	
 	class Listener {

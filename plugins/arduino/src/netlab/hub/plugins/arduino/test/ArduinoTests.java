@@ -22,7 +22,6 @@ public class ArduinoTests {
 	
 	@BeforeClass
     public static void setUpClass() throws Exception {
-		System.clearProperty(SerialPort.SERIAL_PORT_FACTORY_IMPL_CLASS);
 		portName = "/dev/cu.usbserial-A1234Q";
 		board = new MockArduino(portName);
     }
@@ -64,14 +63,14 @@ public class ArduinoTests {
 		service.process(request, new MockResponse(request));
 		assertEquals(service.request, request);
 		assertEquals(service.command, "pinmode");
-		assertEquals(service.board.getSerialPortName(), portName);
+		assertEquals(service.board.getPortName(), portName);
 		
 		request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/digitalout 9 1");
 		service.setBoard(portName, board);
 		service.process(request, new MockResponse(request));
 		assertEquals(service.request, request);
 		assertEquals(service.command, "readwrite");
-		assertEquals(service.board.getSerialPortName(), portName);
+		assertEquals(service.board.getPortName(), portName);
 	}
 	
 	@Test
@@ -91,7 +90,7 @@ public class ArduinoTests {
 		}
 		assertEquals(response.getMessage().getArguments().get(0).toString(), "OK");
 		try {
-			assertEquals(service.getBoard("*").getSerialPortName(), portName);
+			assertEquals(service.getBoard("*").getPortName(), portName);
 		} catch (ServiceException e) {
 			assertTrue(e.toString(), false);
 		}

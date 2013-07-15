@@ -21,7 +21,6 @@ package netlab.hub.core;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class ServiceRegistry {
 	
@@ -39,10 +38,7 @@ public class ServiceRegistry {
 		return services.get(address);
 	}
 	
-	public synchronized static void disposeAll() throws ServiceException {
-		for (Iterator<Service> it=getAll().iterator(); it.hasNext();) {
-			it.next().dispose();
-		}
+	public synchronized static void clear() throws ServiceException {
 		services.clear();
 	}
 

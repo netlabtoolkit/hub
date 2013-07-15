@@ -19,246 +19,99 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 package netlab.hub.serial;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
+import netlab.hub.processing.runner.HubRunnerGUI;
+import netlab.hub.processing.runner.MacSerialFixer;
+import netlab.hub.util.ArrayUtils;
 import netlab.hub.util.Logger;
-
+import netlab.hub.util.ThreadUtil;
+import netlab.hub.util.WildcardPatternMatch;
+import processing.core.PApplet;
+import processing.serial.Serial;
 
 /**
- * A platform-neutral serial port. Provides additional control over open ports
- * that prevents more than one client from getting a reference to a port instance. 
- * <p />
- * Usage:
- * <p />
- * <code>
- *		SerialEventHandler inputHandler = new SerialEventHandler() {
- *			public void serialEvent(SerialPort port) {
- *				System.out.println(port.readStringUntil('\n'));
- *			}
- *		};
- * 		String[] ports = SerialPort.list();
- *		// String[] ports = SerialPort.list("/usbmodem*");
- *		SerialPort port = SerialPort.open(inputHandler, ports[0], 9600);
- *		// Now make use of the port. 
- *		port.write("ok");
- *		// Close it when completely finished with it. Nobody else will be able to use it in the meantime.
- *		port.close();
- *	</code>
- *
+ * This class is a decorator for the Processing serial implementation.
+ * It is not technically necessary, but it protects plugins that need
+ * a serial port from the fact that we are using Processing's serial
+ * implementation, which will make changes easier down the road.
+ * 
  */
-public abstract class SerialPort {
+public class SerialPort {
 	
-	/**
-	 * Convenience constant for the implementation system property name.
-	 */
-	public static final String SERIAL_PORT_FACTORY_IMPL_CLASS = "netlab.hub.serialportfactory";
+	Serial serial;
+	SerialEventHandler eventHandler;
+	SerialPort self;
 	
-	/**
-	 * Registry of all open <code>SerialPort</code> 
-	 * instances currently in use by clients.
-	 */
-	private static HashMap<String, SerialPort> openPorts = new HashMap<String, SerialPort>();
+	@SuppressWarnings("serial")
+	public class SerialProxy extends PApplet {
+	    public void serialEvent(Serial which) {
+	      eventHandler.serialEvent(self);
+	    }
+	  }
 	
-	/**
-	 * @return
-	 * @throws SerialException
-	 */
-	public static synchronized String[] list() throws SerialException {
-		String[] ports = SerialPortFactory.list();
-		if (Logger.isDebug()) {
-			//Logger.debug("Listing serial ports...");
-			//System.out.println(Logger.getStackTrace(new java.lang.Exception()));
-			//Logger.debug(ArrayUtils.toString(ports));
+	public SerialPort(SerialEventHandler eventHandler, String name, int rate) throws SerialException {
+		this.self = this;
+		if (MacSerialFixer.isNeeded()) {
+			new MacSerialFixer(HubRunnerGUI.parent).run(); // Run in this thread so dialog box will block execution
+			String msg = "Serial port configuration fix is needed by the Hub - "+
+							"Please check the Hub application to run the fix and try connecting again.";
+			Logger.info(msg);
+			throw new SerialException(msg);
 		}
-		return ports;
+		try {
+			this.serial = new Serial(new SerialProxy(), name, rate);
+		} catch (RuntimeException e) {
+			throw new SerialException("Error opening serial port. The port may be in use by another application.");
+		}
+		ThreadUtil.pause(3000);
 	}
 	
-	/**
-	 * @param namePattern
-	 * @return
-	 * @throws SerialException
-	 */
-	public static synchronized String[] list(String namePattern) throws SerialException {
-		String[] ports = SerialPortFactory.list(namePattern);
-		if (Logger.isDebug()) {
-			//Logger.debug("Listing serial ports for pattern...");
-			//System.out.println(Logger.getStackTrace(new java.lang.Exception()));
-			//Logger.debug(ArrayUtils.toString(ports));
-		}
-		return ports;
-	}
-	
-	/**
-	 * @param inputHandler
-	 * @param name
-	 * @param baud
-	 * @return
-	 * @throws SerialException
-	 */
-	public static synchronized SerialPort open(SerialEventHandler inputHandler, String name, int baud) throws SerialException {
-		Logger.debug("Connecting to port ["+name+"] at ["+baud+"]");
-		if (openPorts.containsKey(name)) {
-			throw new SerialException("The port ["+name+"] is already in use by another service.");
-		}
-		final SerialPort port = SerialPortFactory.getNewPortInstance();
-		port.name = name;
-		port.baud = baud;
-		port.inputHandler = inputHandler;
-		port.connect(inputHandler, name, baud);
-		openPorts.put(name, port);
-		Logger.debug("Established connection to port ["+name+"] at ["+baud+"]");
-		port.ready = true;
-		return port;
-	}
-	
-	/**
-	 * 
-	 */
-	public static synchronized void disposeAll() {
-		SerialPort[] ports = new SerialPort[openPorts.size()];
-		int i=0;
-		// Copy ports into an array so we don't get concurrency errors if someone calls close 
-		for (Iterator<SerialPort> it=openPorts.values().iterator(); it.hasNext();) {
-			ports[i++] = it.next();
-		}
-		for (int j=0; j<ports.length; j++) {
-			ports[j].close();
-		}
-	}
-	
-	protected String name;
-	protected int baud;
-	protected SerialEventHandler inputHandler;
-	boolean ready = false;
-	
-	//private SerialPortMonitor monitor;
-	
-	public SerialPort() {
-		super();
-	}
-	
-	/**
-	 * @return
-	 */
 	public String getName() {
-		return name;
+		return serial.port.getName();
 	}
 	
-	public String toString() {
-		return name;
+	public void bufferUntil(int what) {
+		serial.bufferUntil(what);
 	}
 	
+	public void write(int value) {
+		serial.write(value);
+	}
 	
-	/*
-	class SerialPortMonitor implements Runnable {
-		boolean running = false;
-		SerialPort port;
-		SerialEventHandler inputHandler;
-		public SerialPortMonitor(SerialPort port, SerialEventHandler inputHandler) {
-			this.port = port;
-			this.inputHandler = inputHandler;
-		}
-		public void start() {
-			running = true;
-			new Thread(this, "Serial-port-monitor-"+name).start();
-		}
-		public void stop() {
-			running = false;
-		}
-		public void run() {
-			while (running) {
-				if (!port.connected()) {
-					synchronized(port) {
-						inputHandler.serialDisconnect(port);
-						port.close();
-					}
-				}
-				ThreadUtil.pause(100);
+	public void write(byte[] value) {
+		serial.write(value);
+	}
+	
+	public void write(String value) {
+		serial.write(value);
+	}
+	
+	public String readStringUntil(int interesting) {
+		return serial.readStringUntil(interesting);
+	}
+	
+	public void dispose() {
+		serial.dispose();
+	}
+	
+	public static String[] list() {
+		return Serial.list();
+	}
+	
+	public static String[] list(String pattern) {
+		if (pattern == null) return list();
+		String[] allPorts = list();
+		List<String> matched = new ArrayList<String>();
+		for (int i=0; i<allPorts.length; i++) {
+			String candidate = allPorts[i];
+			if (WildcardPatternMatch.matches(pattern, candidate)) {
+				matched.add(candidate);
 			}
-		}
+		} 
+		return ArrayUtils.toStringArray(matched);
 	}
-	*/
-	
-	/**
-	 * @param port
-	 * @throws SerialException
-	 */
-	public synchronized void close() {
-		if (!openPorts.containsValue(this)) return;
-		ready = false;
-		Logger.debug("Closing port ["+name+"]");
-		//monitor.stop();
-		openPorts.remove(name);
-		closeConnection();
-		Logger.debug("Closed port ["+name+"]");
-	}
-	
-	/**
-	 * @throws SerialException
-	 */
-	public synchronized void reconnect() throws SerialException {
-		ready = false;
-		closeConnection();
-		connect(inputHandler, name, baud);
-	}
-	
-	public boolean isReady() {
-		return ready;
-	}
-	
-	/**
-	 * @param inputHandler
-	 * @param name
-	 * @param baud
-	 * @throws SerialException
-	 */
-	public abstract void connect(SerialEventHandler inputHandler, String name, int baud) throws SerialException;
-	
-	/**
-	 * @param value
-	 */
-	public abstract void write(int value);
-	
-	/**
-	 * @param value
-	 */
-	public abstract void write(String value);
-	
-	/**
-	 * @param value
-	 */
-	public abstract void write(byte[] value);
-	
-	/**
-	 * @param what
-	 */
-	public abstract void bufferUntil(int what);
-	
-	/**
-	 * @return
-	 */
-	public abstract String readString();
-	
-	/**
-	 * @param interesting
-	 * @return
-	 */
-	public abstract String readStringUntil(int interesting);
-	
-	/**
-	 * @return
-	 */
-	public abstract int read();
-	
-	/**
-	 * 
-	 */
-	public abstract void closeConnection();
-	
-	/**
-	 * @return
-	 */
-	public abstract int available();
-	
+
 }
+
