@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package netlab.hub.processing.runner;
+package netlab.hub.processing.desktop;
 
 import java.io.File;
 
@@ -39,7 +39,7 @@ import controlP5.ControlEvent;
 public class DevLauncherApplet extends PApplet {
 	
 	Hub hub;
-	HubGUI gui;
+	HubDesktopApplication app;
 	
 	
 	public void setup() {
@@ -53,7 +53,7 @@ public class DevLauncherApplet extends PApplet {
 		hub = new Hub(new File(base));
 		
 		// Create the gui and attach it to the hub
-		gui = new HubGUI(hub, this);
+		app = new HubDesktopApplication(hub, this);
 		
 		// Start the Hub in a new thread so that Processing can move on
 		// and start calling the "draw" method during Hub init.
@@ -71,7 +71,7 @@ public class DevLauncherApplet extends PApplet {
 	}
 	
 	public void controlEvent(ControlEvent e) {
-		gui.controlEvent(e);
+		app.controlEvent(e);
 	}
 	
 	public void stop() {

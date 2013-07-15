@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package netlab.hub.processing.runner;
+package netlab.hub.processing.desktop;
 
 import java.io.File;
 

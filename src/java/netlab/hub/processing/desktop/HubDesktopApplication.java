@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package netlab.hub.processing.runner;
+package netlab.hub.processing.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -59,7 +59,7 @@ import controlP5.Textarea;
 import controlP5.Textfield;
 import controlP5.Textlabel;
 
-public class HubGUI implements IDataActivityMonitor, ISessionLifecycleMonitor, IHubLifecycleMonitor {
+public class HubDesktopApplication implements IDataActivityMonitor, ISessionLifecycleMonitor, IHubLifecycleMonitor {
 	
 	public static PApplet parent; // Make the instance available to anyone who needs it (eg serial port implementation)
 	
@@ -69,7 +69,7 @@ public class HubGUI implements IDataActivityMonitor, ISessionLifecycleMonitor, I
 	
 	List<String> clients = new ArrayList<String>();
 	
-	public HubGUI(Hub hub, PApplet parent) {
+	public HubDesktopApplication(Hub hub, PApplet parent) {
 		this.hub = hub;
 		hub.setHubLifecycleMonitor(this);
 		hub.setDataActivityMonitor(this);
@@ -85,7 +85,7 @@ public class HubGUI implements IDataActivityMonitor, ISessionLifecycleMonitor, I
 		PImage mainIconImg = parent.loadImage(mainIconFile.getAbsolutePath());
 		this.mainWindow = new MainWindow(mainIconImg, parent);
 		this.logWindow = new LogWindow();
-		HubGUI.parent = parent;
+		HubDesktopApplication.parent = parent;
 		GUILogger.gui = new IGUILogger() {
 			public void print(String msg) {
 				logWindow.print(msg);

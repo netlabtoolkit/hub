@@ -26,13 +26,13 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
  * netlab.hub.processing.client.HubClient class instead.
  *
  */
-import netlab.hub.processing.runner.*;
+import netlab.hub.processing.desktop.*;
 import controlP5.*;
 import processing.serial.*;
 import java.io.File;
 
 Hub hub;
-HubGUI gui;
+HubDesktopApplication app;
 
 void setup() {
 
@@ -46,7 +46,7 @@ void setup() {
   hub = new Hub(new File(base));
 
   // Create the gui and attach it to the hub
-  gui = new HubGUI(hub, this);
+  app = new HubDesktopApplication(hub, this);
 
   // Start the Hub in a new thread so that Processing can move on
   // and start calling the "draw" method during Hub init.
@@ -69,5 +69,5 @@ void stop() {
 }
 
 public void controlEvent(ControlEvent e) {
-  gui.controlEvent(e);
+  app.controlEvent(e);
 }
