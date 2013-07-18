@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import netlab.hub.serial.SerialException;
 import netlab.hub.serial.SerialPort;
-
 import processing.core.PApplet;
 import processing.serial.Serial;
 
@@ -117,15 +115,34 @@ public class Arduino {
 		super();
 	}
 	
-	public Arduino(String portName) throws SerialException {
+	public Arduino(String portName) {
 		this(portName, 57600);
 	}
 	
-	public Arduino(String portName, int rate) throws SerialException {
+	public Arduino(String portName, int rate) {
 		this.serial = new Serial(new SerialEventHandler(), portName, rate);
 		this.portName = portName;
 		begin();
 	}
+	
+	// To ensure backward compatibility with uses of cc.arduino class
+	public Arduino(PApplet parent, String portName, int rate) {
+		this(portName, rate);
+	}
+	
+	// To ensure backward compatibility with uses of cc.arduino class
+	public Arduino(PApplet parent, String portName) {
+		this(portName);
+	}
+	
+	/**
+	   * Get a list of the available Arduino boards; currently all serial devices
+	   * (i.e. the same as Serial.list()).  In theory, this should figure out
+	   * what's an Arduino board and what's not.
+	   */
+	  public static String[] list() {
+	    return Serial.list();
+	  }
 	
 	public int available() {
 	    return serial.available();
