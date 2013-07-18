@@ -1,6 +1,6 @@
 <project name="deploy" default="deploy" basedir=".">
 	
-	<property name="build.version" value="5.0.0b" />
+	<property name="build.version" value="5.0.0" />
 	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>

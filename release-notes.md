@@ -8,4 +8,5 @@
 - Merged core plug-ins with main Hub application
 - Added open source licensing terms
 - Changed Hub command /service/core/ to /service/tools/
+- Added generic serial service
 - Miscellaneous fixes and improvements
