@@ -11,13 +11,13 @@
 		Example 1 - write to digital output 3 on a Make Controller
 		with IP address 192.168.1.100:10000:
 		
-			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/connect 10000 192.168.1.100:10000
 			/service/osc/reader-writer/192.168.1.100:10000/digitalout/3/value 1
 		
 		Example 2 - do a one=time read of the analog input pin 7 on a Make controller
 		at network address 192.168.1.100:10000
 		
-			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/connect 10000 192.168.1.100:10000
 			/service/osc/reader-writer/listen /analogin/7/value 10000
 			/service/osc/reader-writer/{192.168.1.100:10000}/analogin/7/value
 		
@@ -25,7 +25,7 @@
 		received on port 30000 from an OSC device at network address 
 		192.168.1.100:10000 (return messages at a max rate of 5 samples per second):
 		
-			/service/osc/reader-writer/connect 192.168.1.100:10000 30000
+			/service/osc/reader-writer/connect 30000 192.168.1.100:10000
 			/service/osc/reader-writer/listen /analogin/7/value 30000 1 5
 		
 		Example 4 - read stream of all messages matching the pattern "/analogin/7/value" 
@@ -34,7 +34,7 @@
 		to registered listeners on their own. The Make Controller requires polling.
 		See commands.txt in the Hub root directory for more information on polling.
 		
-			/service/osc/reader-writer/connect 192.168.1.100:10000
+			/service/osc/reader-writer/connect 10000 192.168.1.100:10000
 			/service/osc/reader-writer/listen /analogin/7/value 10000
 			/service/osc/reader-writer/poll /{192.168.1.100:10000}/analogin/7/value 10000
 			
@@ -46,7 +46,7 @@
 		Note: the /connect command must be sent before any others
 		
 		*************************
-		/service/osc/[servicename]/connect [ip:sendport] [receiveport (optional - defaults to sendport)]
+		/service/osc/[servicename]/connect [ip:sendport] [receiveport]
 		
 			Returns: N/A
 			Connects to an OSC device. Send port is used for receiving if no receiveport specified.
@@ -57,8 +57,8 @@
 			See http://www.makingthings.com/ref/firmware/html/group___network_o_s_c.html (osc_udp_port property)
 			
 			Example:
-				/service/osc/reader-writer/connect 192.168.1.100:10000
-				/service/osc/reader-writer/connect 192.168.1.100:10000 20000
+				/service/osc/reader-writer/connect 10000 192.168.1.100:10000 10000
+				/service/osc/reader-writer/connect 10000 192.168.1.100:10000 20000
 			
 		*************************
 		/service/osc/[servicename]/listen [pattern] [inputport]
