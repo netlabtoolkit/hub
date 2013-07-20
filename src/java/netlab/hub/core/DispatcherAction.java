@@ -28,7 +28,10 @@ import netlab.hub.util.Logger;
 public abstract class DispatcherAction {
 	
 	public static DispatcherAction parse(ServiceMessage message) {
-		String command = message.getPath().getLast();
+		String command = null;
+		if (!message.getPath().isEmpty()) {
+			command = message.getPath().getLast();
+		}
 		if ("poll".equalsIgnoreCase(command)) {
 			return new PollAction();
 		} else
