@@ -26,7 +26,6 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 
-import netlab.hub.admin.AdminServer;
 import netlab.hub.util.ClasspathManager;
 import netlab.hub.util.Logger;
 import netlab.hub.util.NetworkUtils;
@@ -154,8 +153,12 @@ public class Hub {
 			if (adminServer == null) {
 				int adminPort = 8080;
 				adminServer = new AdminServer(adminPort, this);
-				adminServer.start();
-				Logger.info("Admin server running at http://"+NetworkUtils.getLocalMachineAddress()+":"+adminPort);
+				try {
+					adminServer.start();
+					Logger.info("Admin server running at http://"+NetworkUtils.getLocalMachineAddress()+":"+adminPort);
+				} catch (Exception e) {
+					Logger.error("Could not start admin server", e);
+				}
 			}
 			
 			monitor.displayStatus("Loading plugins...");

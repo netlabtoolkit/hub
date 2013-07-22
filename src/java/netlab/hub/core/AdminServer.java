@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package netlab.hub.admin;
+package netlab.hub.core;
 
 import static org.rendersnake.HtmlAttributesFactory.class_;
 import static org.rendersnake.HtmlAttributesFactory.href;
@@ -34,9 +34,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import netlab.hub.core.Config;
-import netlab.hub.core.Hub;
-import netlab.hub.core.ServiceConfig;
 import netlab.hub.serial.SerialPort;
 import netlab.hub.util.FileUtils;
 import netlab.hub.util.Logger;
@@ -66,14 +63,9 @@ public class AdminServer {
 		this.hub = hub;
 	}
 
-	public void start() throws IOException {
+	public void start() throws IOException, BindException {
 		InetSocketAddress addr = new InetSocketAddress(this.port);
-		try {
-			server = HttpServer.create(addr, 0);
-		} catch (BindException e) {
-			Logger.error("Could not start admin server", e);
-			return;
-		}
+		server = HttpServer.create(addr, 0);
 		server.createContext("/", new HttpHandler() {
 
 			public synchronized void handle(HttpExchange exchange) throws IOException {
