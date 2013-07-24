@@ -88,8 +88,13 @@ public class Config {
 		return sb.toString();
 	}
 	
-	public static String getAdminPort() {
-		return props.getProperty("app.adminport");
+	public static int getAdminPort() {
+		try {
+			return Integer.parseInt(props.getProperty("app.adminport"));
+		} catch(Exception e) {
+			Logger.error("ServerConfig: Error getting server port number", e);
+			return -1;
+		}
 	}
 	
 	public static int getPort() {

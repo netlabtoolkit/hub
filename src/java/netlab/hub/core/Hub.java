@@ -151,7 +151,7 @@ public class Hub {
 			Logger.info(metadata);
 			
 			if (adminServer == null) {
-				int adminPort = 8080;
+				int adminPort = Config.getAdminPort();
 				adminServer = new AdminServer(adminPort, this);
 				try {
 					adminServer.start();
