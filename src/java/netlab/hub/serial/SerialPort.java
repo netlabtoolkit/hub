@@ -37,6 +37,7 @@ import processing.serial.Serial;
  */
 public class SerialPort {
 	
+	String name;
 	Serial serial;
 	SerialEventHandler eventHandler;
 	SerialPort self;
@@ -50,6 +51,7 @@ public class SerialPort {
 	
 	public SerialPort(SerialEventHandler eventHandler, String name, int rate) throws SerialException {
 		this.self = this;
+		this.name = name;
 		MacSerialFixer.check();
 		try {
 			this.serial = new Serial(new SerialProxy(), name, rate);
@@ -60,7 +62,7 @@ public class SerialPort {
 	}
 	
 	public String getName() {
-		return serial.port.getName();
+		return this.name;
 	}
 	
 	public void bufferUntil(int what) {
