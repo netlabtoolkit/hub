@@ -22,6 +22,9 @@ package netlab.hub.plugins.xbee;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+
 import netlab.hub.core.ServiceException;
 import netlab.hub.serial.SerialPort;
 import netlab.hub.util.Logger;
@@ -83,6 +86,7 @@ public class XBeeNetwork implements PacketListener {
 			}
 			portName = portNames[0]; // In case of multiple matching ports, take the first one in the list
 			this.baseStation = new XBee();
+			LogManager.getLogger("com.rapplogic.xbee.api.XBee").setLevel(Level.ERROR); // Override default "INFO" level because it is too verbose
 			Logger.info("Opening serial port connection to XBee base station "+portName+" (rate="+baudRate+")...");
 			try {		
 				baseStation.open(portName, baudRate);
