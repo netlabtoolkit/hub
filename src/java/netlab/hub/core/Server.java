@@ -99,6 +99,7 @@ public class Server implements Runnable {
 				final int sessionNumber = nextSessionThreadNum();
 				new Thread(new Runnable() {
 					public void run() {
+						BufferedReader reader = null;
 						try {
 							String line;
 							session.start();
@@ -106,7 +107,7 @@ public class Server implements Runnable {
 							Logger.debug("Session "+sessionNumber+" started (client="+session+")");
 							dispatcher.register(session);
 							InputStream clientIn = session.getInputStream();
-							BufferedReader reader = new MonitoredReader(new InputStreamReader(clientIn), session.dataMonitor);
+							reader = new MonitoredReader(new InputStreamReader(clientIn), session.dataMonitor);
 							while ((line = reader.readLine()) != null) { // Blocks until data received
 								line = line.trim();
 								Logger.debug("### Received message from client ["+line+"]");
@@ -119,6 +120,11 @@ public class Server implements Runnable {
 							}
 						} catch (IOException e) {
 							Logger.debug("Exception running session: "+e);
+						}
+						if (reader != null) try { 
+							reader.close(); 
+						} catch (IOException e) {
+							Logger.error("Error closing socket reader", e);
 						}
 						dispatcher.deregister(session);
 						removeSession(session);
