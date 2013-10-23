@@ -31,7 +31,10 @@ import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
 import netlab.hub.serial.SerialEventHandler;
 import netlab.hub.serial.SerialPort;
+import netlab.hub.serial.SerialPortClient;
+import netlab.hub.serial.SerialPortClientRegistry;
 import netlab.hub.util.Logger;
+import netlab.hub.util.ThreadUtil;
 import netlab.hub.util.WildcardPatternMatch;
 
 
@@ -63,7 +66,7 @@ import netlab.hub.util.WildcardPatternMatch;
  * </code>
  *
  */
-public class SerialService extends Service implements SerialEventHandler {
+public class SerialService extends Service implements SerialEventHandler, SerialPortClient {
 	
 	HashMap<String, SerialPort> ports = new HashMap<String, SerialPort>();
 	HashMap<String, List<Listener>> listeners = new HashMap<String, List<Listener>>();
@@ -100,13 +103,14 @@ public class SerialService extends Service implements SerialEventHandler {
 	 * @param response
 	 * @throws ServiceException
 	 */
-	public void commandConnect(ServiceMessage request, ServiceResponse response) throws ServiceException {
+	public synchronized void commandConnect(ServiceMessage request, ServiceResponse response) throws ServiceException {
 		try {
 			String portName = getPortName(request.getArgument(0));
 			SerialPort serial = ports.get(portName);
 			if (serial == null) {
 				int baud = request.argInt(1, 9600);
 				serial = new SerialPort(this, portName, baud);
+				SerialPortClientRegistry.register(portName, this);
 				serial.bufferUntil(terminator);
 				ports.put(portName, serial);
 			}
@@ -268,6 +272,18 @@ public class SerialService extends Service implements SerialEventHandler {
 			it.next().dispose();
 		}
 		ports.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see netlab.hub.serial.SerialPortClient#releasePorts()
+	 */
+	public synchronized void releasePorts() {
+		try {
+			dispose();
+			ThreadUtil.pause(1000);
+		} catch (ServiceException e) {
+			Logger.error("Error releasing serial ports", e);
+		}
 	}
 	
 	class Listener {

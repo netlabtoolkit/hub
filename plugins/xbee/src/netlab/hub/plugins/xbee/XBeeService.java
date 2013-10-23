@@ -27,13 +27,16 @@ import netlab.hub.core.ServiceException;
 import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
 import netlab.hub.serial.SerialPort;
+import netlab.hub.serial.SerialPortClient;
+import netlab.hub.serial.SerialPortClientRegistry;
 import netlab.hub.util.Logger;
+import netlab.hub.util.ThreadUtil;
 
 /**
  * @author Ewan Branda
  *
  */
-public class XBeeService extends Service {
+public class XBeeService extends Service implements SerialPortClient {
 	
 	/**
 	 * The XBee networks to which this service is currently connected.
@@ -64,6 +67,14 @@ public class XBeeService extends Service {
 			for (Iterator<XBeeNetwork> it=xbees.values().iterator(); it.hasNext();) {
 				it.next().dispose();
 			}
+	}
+	
+	/* (non-Javadoc)
+	 * @see netlab.hub.serial.SerialPortClient#releasePorts()
+	 */
+	public synchronized void releasePorts() {
+		dispose();
+		ThreadUtil.pause(1000);
 	}
 	
 	
@@ -119,6 +130,7 @@ public class XBeeService extends Service {
 				}
 				int baudRate = request.argInt(1, XBeeNetwork.DEFAULT_BAUD_RATE);
 				network.connect(portName, baudRate);
+				SerialPortClientRegistry.register(portName, this);
 				if (xbees.isEmpty()) {
 					xbees.put("*", network);
 				}

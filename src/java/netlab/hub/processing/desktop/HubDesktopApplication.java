@@ -39,6 +39,7 @@ import netlab.hub.core.Hub;
 import netlab.hub.core.IDataActivityMonitor;
 import netlab.hub.core.IHubLifecycleMonitor;
 import netlab.hub.core.ISessionLifecycleMonitor;
+import netlab.hub.serial.SerialPortClientRegistry;
 import netlab.hub.util.GUILogger;
 import netlab.hub.util.IGUILogger;
 import netlab.hub.util.Logger;
@@ -120,11 +121,12 @@ public class HubDesktopApplication implements IDataActivityMonitor, ISessionLife
 				logWindow.setLocation(x, y);
 				logWindow.setVisible(true);
 			}
-		} else 
-		if (e.isFrom(mainWindow.showDashboard)) {
+		} else if (e.isFrom(mainWindow.showDashboard)) {
 			showDashboardPage("");
 		} else if (e.isFrom(mainWindow.logDebugInfo)) {
 			Logger.switchDebugLevel();
+		} else if (e.isFrom(mainWindow.releasePorts)) {
+			SerialPortClientRegistry.releasePorts();
 		}
 	}
 	
@@ -184,6 +186,7 @@ class MainWindow {
 	Textarea messages;
 	Textlabel status;
 	Textarea alert;
+	Button releasePorts;
 	Button showLog;
 	Button showDashboard;
 	CheckBox logDebugInfo;
@@ -284,6 +287,11 @@ class MainWindow {
 		.hide()
 		;
 		
+		releasePorts = controls.addButton("release ports")
+		.setPosition(buttonsOffset+280, 320)
+		.hide()
+		;
+		
 //		messages = controls.addTextarea("messages")
 //		.setWidth(160)
 //		.setPosition(300, 295)
@@ -347,6 +355,7 @@ class MainWindow {
 //							"\nWebSocket port: "+Config.getWebSocketPort()).toUpperCase());
 		showLog.show();
 		showDashboard.show();
+		releasePorts.show();
 		logDebugInfo.show();
 		appNameLabel.setPosition(10, 5);
 		appVersionLabel.setPosition(125, 16);

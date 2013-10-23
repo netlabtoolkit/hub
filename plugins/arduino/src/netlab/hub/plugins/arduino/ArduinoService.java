@@ -29,14 +29,17 @@ import netlab.hub.core.ServiceResponse;
 import netlab.hub.serial.MacSerialFixer;
 import netlab.hub.serial.SerialException;
 import netlab.hub.serial.SerialPort;
+import netlab.hub.serial.SerialPortClient;
+import netlab.hub.serial.SerialPortClientRegistry;
 import netlab.hub.util.Logger;
+import netlab.hub.util.ThreadUtil;
 
 /**
  * <p>Implementation of Service for Arduino access. Communicates with an 
  * Arduino board running StandardFirmata.</p>
  *
  */
-public class ArduinoService extends Service {
+public class ArduinoService extends Service implements SerialPortClient {
 	
 	protected HashMap<String, Arduino> boards = new HashMap<String, Arduino>(); // Keyed by original port pattern
 					
@@ -109,6 +112,7 @@ public class ArduinoService extends Service {
 				String portName = availablePorts[0]; // Take the first matching name by default
 				int baud = request.argInt(1, 57600);
 				arduino = new Arduino(portName, baud);
+				SerialPortClientRegistry.register(portName, this);
 				if (boards.isEmpty()) { // If this is the first board, store the board reference under the default name pattern
 					boards.put("*", arduino);
 				}
@@ -197,6 +201,18 @@ public class ArduinoService extends Service {
 			it.next().dispose();
 		}
 		boards.clear();
+	}
+	
+	/* (non-Javadoc)
+	 * @see netlab.hub.serial.SerialPortClient#releasePorts()
+	 */
+	public synchronized void releasePorts() {
+		try {
+			dispose();
+			ThreadUtil.pause(1000);
+		} catch (ServiceException e) {
+			Logger.error("Error releasing serial ports", e);
+		}
 	}
 	
 }
