@@ -26,6 +26,7 @@ import netlab.hub.core.Service;
 import netlab.hub.core.ServiceException;
 import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
+import netlab.hub.serial.MacSerialFixer;
 import netlab.hub.serial.SerialException;
 import netlab.hub.serial.SerialPort;
 import netlab.hub.util.Logger;
@@ -99,6 +100,7 @@ public class ArduinoService extends Service {
 			String portNamePattern = request.getArgument(0);
 			Arduino arduino = boards.get(portNamePattern);
 			if (arduino == null) {
+				MacSerialFixer.check();
 				String[] availablePorts = SerialPort.list(portNamePattern);
 				if (availablePorts.length == 0) {
 					throw new SerialException("Could not find a USB device matching the name pattern ["

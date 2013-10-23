@@ -17,12 +17,13 @@ You should have received a copy of the GNU General Public License
 along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package netlab.hub.processing.desktop;
+package netlab.hub.serial;
 
 import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import netlab.hub.processing.desktop.HubDesktopApplication;
 import netlab.hub.util.Logger;
 import processing.core.PApplet;
 
@@ -32,6 +33,16 @@ import processing.core.PApplet;
  * See https://github.com/processing/processing/blob/master/app/src/processing/app/tools/SerialFixer.java
  */
 public class MacSerialFixer {
+	
+	static public void check() throws SerialException {
+		if (MacSerialFixer.isNeeded()) {
+			new MacSerialFixer(HubDesktopApplication.parent).run(); // Run in this thread so dialog box will block execution
+			String msg = "Serial port configuration fix is needed by the Hub - "+
+							"Please check the Hub application to run the fix and try connecting again.";
+			Logger.info(msg);
+			throw new SerialException(msg);
+		}
+	}
 
 	static public boolean isNeeded() {
 		try {
