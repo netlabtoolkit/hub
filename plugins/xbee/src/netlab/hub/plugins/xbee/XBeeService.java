@@ -82,7 +82,7 @@ public class XBeeService extends Service {
 						portNamePattern+"]. Did you send the /connect command first?");
 			}
 			if ("digitalout".equals(command)) {
-				commandDigitalOut(request, response, network); 
+				commandDigitalWrite(request, response, network); 
 			} 
 			else
 			if ("analogin".equals(command)) {
@@ -140,11 +140,16 @@ public class XBeeService extends Service {
 	 * @param network
 	 * @throws ServiceException
 	 */
-	public void commandDigitalOut(ServiceMessage request, ServiceResponse response, XBeeNetwork network) throws ServiceException {
+	public void commandDigitalWrite(ServiceMessage request, ServiceResponse response, XBeeNetwork network) throws ServiceException {
 		try {
 			ReadWriteRequest req = new ReadWriteRequest(request);
 			boolean value = request.argInt(0, 0) > 0;
-			network.digitalWrite(req.getRemoteId(), req.getPin(), value);
+			String remoteId = req.getRemoteId();
+			if ("*".equals(remoteId)) {
+				network.digitalSend(req.getPin(), value);
+			} else {
+				network.digitalSend(req.getPin(), value, remoteId);
+			}
 		} catch (Exception e) {
 			Logger.debug("Error writing to XBee network", e);
 		}
@@ -160,16 +165,20 @@ public class XBeeService extends Service {
 	public void commandRead(ServiceMessage request, ServiceResponse response, XBeeNetwork network, boolean digital) throws ServiceException {
 		try {
 			ReadWriteRequest req = new ReadWriteRequest(request);
+			String[] remoteIds = null;
 			if (req.getRemoteId().equals("*")) {
-				for (String id : network.getCurrentRemoteIds()) {
-					ServiceMessage returnAddress = req.getReturnAddress(id);
-					int value = digital ? network.digitalRead(id, req.getPin()) : network.analogRead(id, req.getPin());
-					response.write(returnAddress, value);
-				}
+				remoteIds = network.getAllRemoteIds();
 			} else {
-				String id = req.getRemoteId();
-				int value = digital ? network.digitalRead(id, req.getPin()) : network.analogRead(id, req.getPin());
-				response.write(value);
+				remoteIds = new String[]{req.getRemoteId()};
+			}
+			for (String remoteId : remoteIds) {
+				ServiceMessage returnAddress = req.getReturnAddress(remoteId);
+				RemoteXBee xbee = network.getRemoteXBee(remoteId);
+				int value = 0;
+				if (xbee != null) {
+					value = digital ? xbee.digitalRead(req.getPin()) : xbee.analogRead(req.getPin());
+				}
+				response.write(returnAddress, value);
 			}
 		} catch (Exception e) {
 			Logger.debug("Error reading from XBee network", e);

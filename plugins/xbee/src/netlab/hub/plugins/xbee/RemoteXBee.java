@@ -31,15 +31,15 @@ public class RemoteXBee {
 		this.id = id;
 	}
 	
-	public void setAnalog(int pin, int value) {
+	public void setAnalogSample(int pin, int value) {
 		analogSamples[pin] = value;
 	}
 	
-	public void setDigital(int pin, int value) {
+	public void setDigitalSample(int pin, int value) {
 		digitalSamples[pin] = value;
 	}
 	
-	public int getAnalog(int pin) {
+	public int analogRead(int pin) {
 		if (0 > pin && pin >= analogSamples.length) {
 			Logger.debug("Pin number must be in the range of 0 to "+(analogSamples.length-1));
 			return 0;
@@ -47,7 +47,7 @@ public class RemoteXBee {
 		return analogSamples[pin];
 	}
 	
-	public int getDigital(int pin) {
+	public int digitalRead(int pin) {
 		if (0 > pin && pin >= digitalSamples.length) {
 			Logger.debug("Pin number must be in the range of 0 to "+(digitalSamples.length-1));
 			return 0;

@@ -137,12 +137,12 @@ public class XBeeNetwork implements PacketListener {
 					for (IoSample sample: ioSample.getSamples()) {
 						if (ioSample.containsAnalog()) {
 							for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
-								xbee.setAnalog(pin, sample.getAnalog(pin));
+								xbee.setAnalogSample(pin, sample.getAnalog(pin));
 							}
 						}
 						if (ioSample.containsDigital()) {
 							for (int pin=0; pin<xbee.getDigitalPinCount(); pin++) {
-								xbee.setDigital(pin, sample.isDigitalOn(pin) ? 1 : 0);
+								xbee.setDigitalSample(pin, sample.isDigitalOn(pin) ? 1 : 0);
 							}
 						}
 					}
@@ -161,12 +161,12 @@ public class XBeeNetwork implements PacketListener {
 				}
 				if (sample.containsAnalog()) {
 					for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
-						xbee.setAnalog(pin, sample.getAnalog(pin));
+						xbee.setAnalogSample(pin, sample.getAnalog(pin));
 					}
 				}
 				if (sample.containsDigital()) {
 					for (int pin=0; pin<xbee.getDigitalPinCount(); pin++) {
-						xbee.setDigital(pin, sample.isDigitalOn(pin) ? 1 : 0);
+						xbee.setDigitalSample(pin, sample.isDigitalOn(pin) ? 1 : 0);
 					}
 				}
 			}
@@ -176,7 +176,7 @@ public class XBeeNetwork implements PacketListener {
 	/**
 	 * @return
 	 */
-	public synchronized String[] getCurrentRemoteIds() {
+	public synchronized String[] getAllRemoteIds() {
 		String[] remoteIds = new String[xbees.size()];
 		int i=0;
 		for (Iterator<String> ids=xbees.keySet().iterator(); ids.hasNext();) {
@@ -185,34 +185,19 @@ public class XBeeNetwork implements PacketListener {
 		return remoteIds;
 	}
 	
-	/**
-	 * Read the latest analog input value from the sample buffer.
-	 * @param remoteId the id of the target device as a hex string
-	 * @param pin
-	 * @return
-	 */
-	public synchronized int analogRead(String remoteId, int pin) {
-		RemoteXBee xbee = xbees.get(remoteId);
-		if (xbee == null) {
-			Logger.debug("No samples from XBee ["+remoteId+"] have been received yet.");
-			return 0;
-		}
-		return xbee.getAnalog(pin);
+	public synchronized RemoteXBee getRemoteXBee(String id) {
+		return xbees.get(id);
 	}
 	
-	/**
-	 * Read the latest digital input value from the sample buffer.
-	 * @param remoteId the id of the target device as a hex string
-	 * @param pin
-	 * @return
-	 */
-	public synchronized int digitalRead(String remoteId, int pin) {
-		RemoteXBee xbee = xbees.get(remoteId);
-		if (xbee == null) {
-			Logger.debug("No samples from XBee ["+remoteId+"] have been received yet.");
-			return 0;
+	public void digitalSend(int pin, boolean value) {
+		XBeeAddress64 addr64 = XBeeAddress64.BROADCAST;
+		// 5 is Digital Output High, 0 is Low
+		RemoteAtRequest request = new RemoteAtRequest(addr64, "D"+pin, new int[] {(value ? 5 : 0)});
+		try {
+			baseStation.sendAsynchronous(request);
+		} catch (XBeeException e) {
+			Logger.warn("Error writing digital value to XBee: "+e);
 		}
-		return xbee.getDigital(pin);
 	}
 	
 	/**
@@ -221,18 +206,12 @@ public class XBeeNetwork implements PacketListener {
 	 * @param pin
 	 * @param value
 	 */
-	public void digitalWrite(String remoteId, int pin, boolean value) {
-		boolean broadcast = "*".equals(remoteId);
-		// Use the 64 bit address for broadcast to all devices as a defult
-		XBeeAddress64 addr64 = broadcast ? XBeeAddress64.BROADCAST : new XBeeAddress64(new int[8]);
+	public void digitalSend(int pin, boolean value, String remoteId) {
+		XBeeAddress64 addr64 = new XBeeAddress64(new int[8]);
 		// 5 is Digital Output High, 0 is Low
 		RemoteAtRequest request = new RemoteAtRequest(addr64, "D"+pin, new int[] {(value ? 5 : 0)});
-		// If request targets a specific device then use the 16 bit address of the remote device
-		// which overrides the 64 bit address set above. The remote ID can be found in X-CTU app.
-		if (!broadcast) {
-			DoubleByte addr = new DoubleByte(Integer.parseInt(remoteId, 16));
-			request.setRemoteAddr16(new XBeeAddress16(addr.getMsb(), addr.getLsb()));
-		}
+		DoubleByte addr = new DoubleByte(Integer.parseInt(remoteId, 16));
+		request.setRemoteAddr16(new XBeeAddress16(addr.getMsb(), addr.getLsb()));
 		try {
 			baseStation.sendAsynchronous(request);
 		} catch (XBeeException e) {

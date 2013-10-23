@@ -26,13 +26,13 @@ public class MockXBeeNetwork extends XBeeNetwork {
 
 	public void setAnalogSample(String remoteId, int pin, int value) {
 		RemoteXBee xbee = new RemoteXBee(remoteId);
-		xbee.setAnalog(pin, value);
+		xbee.setAnalogSample(pin, value);
 		put(xbee);
 	}
 	
 	public void setDigitalSample(String remoteId, int pin, int value) {
 		RemoteXBee xbee = new RemoteXBee(remoteId);
-		xbee.setDigital(pin, value);
+		xbee.setDigitalSample(pin, value);
 		put(xbee);
 	}
 	
