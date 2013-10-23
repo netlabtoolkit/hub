@@ -33,7 +33,7 @@ import java.net.URLClassLoader;
  */
 public class ClasspathManager {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final Class[] parameters = new Class[]{URL.class};
 	
 	

@@ -29,7 +29,7 @@ import netlab.hub.util.Logger;
 
 public class Autodispatcher {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public static boolean dispatch(Service service, ServiceMessage request, ServiceResponse response) throws ServiceException {
 		
 		List<Class> parameterTypes = new ArrayList<Class>();
@@ -123,7 +123,7 @@ public class Autodispatcher {
         	append(input.substring(1).toLowerCase()).toString();
     }
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public static String debug(String methodName, Class[] parameterTypes, Object[] args) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("public void ").append(methodName);
