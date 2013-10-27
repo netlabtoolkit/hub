@@ -106,6 +106,7 @@ public class SerialService extends Service implements SerialEventHandler, Serial
 	public synchronized void commandConnect(ServiceMessage request, ServiceResponse response) throws ServiceException {
 		try {
 			String portName = getPortName(request.getArgument(0));
+			Logger.debug("Using serial port ["+portName+"]");
 			SerialPort serial = ports.get(portName);
 			if (serial == null) {
 				int baud = request.argInt(1, 9600);
@@ -114,6 +115,7 @@ public class SerialService extends Service implements SerialEventHandler, Serial
 				serial.bufferUntil(terminator);
 				ports.put(portName, serial);
 			}
+			Logger.debug("Serial port name = ["+serial.getName()+"]");
 			response.write(new String[]{"OK", serial.getName()});
 		} catch (Exception e) {
 			Logger.error("Error connecting to serial port", e);

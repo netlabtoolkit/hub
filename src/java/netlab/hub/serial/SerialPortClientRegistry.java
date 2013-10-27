@@ -49,7 +49,7 @@ public class SerialPortClientRegistry {
 		Logger.info("Releasing all serial ports...");
 		for (Iterator<SerialPortClient> clients = registry.values().iterator(); clients.hasNext();) {
 			SerialPortClient client = clients.next();
-			Logger.info("Releaseing ports from service ["+client.getClass()+"]");
+			Logger.debug("Releasing ports from service ["+client.getClass()+"]");
 			client.releasePorts();
 		}
 		Logger.info("Serial ports released.");
