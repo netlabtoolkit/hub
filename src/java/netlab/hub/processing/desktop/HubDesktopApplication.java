@@ -364,16 +364,17 @@ class MainWindow {
 		new Thread(new Runnable() {
 			List<String> devices = new ArrayList<String>();
 			public void run() {
-				devices.clear();
-				String[] current = Serial.list();
-				for (int i=0; i<current.length; i++) {
-					if (current[i].startsWith("/dev/cu.Bluetooth") || current[i].startsWith("/dev/tty.Bluetooth")) {
-						//continue;
+				while (true) {
+					String[] current = Serial.list();
+					if (current.length != devices.size()) {
+						devices.clear();
+						for (int i=0; i<current.length; i++) {
+							devices.add(current[i]);
+						}
+						updateSerialDeviceList(devices);
 					}
-					devices.add(current[i]);
+					ThreadUtil.pause(2000);
 				}
-				updateSerialDeviceList(devices);
-				ThreadUtil.pause(5000);
 			}
 		}).start();
 	}
