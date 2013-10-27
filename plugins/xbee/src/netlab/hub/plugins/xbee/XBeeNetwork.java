@@ -62,13 +62,15 @@ public class XBeeNetwork implements PacketListener {
 	 */
 	public XBeeNetwork() {
 		super();
+		this.baseStation = new XBee();
+		LogManager.getLogger("com.rapplogic.xbee.api.XBee").setLevel(Level.ERROR); // Override default "INFO" level because it is too verbose
 	}
 	
 	/**
 	 * @param series
 	 */
 	public XBeeNetwork(int series) {
-		super();
+		this();
 		this.series = series;
 	}
 	
@@ -85,8 +87,6 @@ public class XBeeNetwork implements PacketListener {
 				throw new ServiceException("Could not find available serial port matching ["+portNamePattern+"]");
 			}
 			portName = portNames[0]; // In case of multiple matching ports, take the first one in the list
-			this.baseStation = new XBee();
-			LogManager.getLogger("com.rapplogic.xbee.api.XBee").setLevel(Level.ERROR); // Override default "INFO" level because it is too verbose
 			Logger.info("Opening serial port connection to XBee base station "+portName+" (rate="+baudRate+")...");
 			try {		
 				baseStation.open(portName, baudRate);
