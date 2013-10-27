@@ -1,0 +1,85 @@
+<project name="deploy" default="deploy" basedir=".">
+	
+	<property name="build.version" value="5.0.0" />
+	
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${user.home}/Documents/Eclipse_workspace/java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
+		</classpath>
+	</taskdef>
+	
+	<tstamp><format property='build.date' pattern='yyyy-MM-dd'/></tstamp>
+	<property name="deploy.dir" value="build/core"/>
+
+	<target name="deleteDeployDir">		
+		<if>
+			<available file="${deploy.dir}" type="dir" />
+			<then>
+				<delete includeEmptyDirs="true">
+					<fileset dir="${deploy.dir}">
+						<include name="**/*" />
+					</fileset>
+				</delete>
+			</then>
+		</if>
+		<echo>Contents of ${deploy.dir} deleted</echo>
+	</target>
+		
+	<target name="deploy" depends="deleteDeployDir">
+		
+		<echo>Deploying core Hub files to ${deploy.dir}</echo>
+		<mkdir dir="${deploy.dir}"/>
+		<copy todir="${deploy.dir}">
+			<fileset dir="." includes="lib/**" />
+		</copy>
+		<copy todir="${deploy.dir}">
+			<fileset dir="." includes="conf/**" />
+		</copy>
+		<copy todir="${deploy.dir}">
+			<fileset dir="." includes="plugins/**" />
+		</copy>
+		<copy todir="${deploy.dir}">
+			<fileset dir="." includes="*.txt *.md" />
+		</copy>
+		
+		<jar destfile="${deploy.dir}/lib/hub.jar" basedir="bin" excludes="netlab/hub/plugins/**" />
+		<foreach target="jar-plugin" param="thePluginDir">
+			<path>
+				<dirset dir="${deploy.dir}">
+					<include name="plugins/*" />
+				</dirset>
+			</path>
+		</foreach>
+		
+		<mkdir dir="${deploy.dir}/log" />
+		<touch file="${deploy.dir}/log/hub.log" />
+		
+		<!-- Add the build information to the deployed properties file -->
+		<propertyfile file="${deploy.dir}/conf/hub.properties">
+		  	<entry key="app.version" value="${build.version}"/>
+			<entry key="app.build" value="${build.date}"/>
+		</propertyfile>
+		
+		<!--<zip destfile="${deploy.dir}/../netlabhub-${build.version}-${build.date}.zip" basedir="${deploy.dir}" />-->
+		
+		<echo>Core Hub application files deployed to ${user.dir}/${deploy.dir}</echo>
+	</target>
+	
+	<target name="jar-plugin">
+		<echo>Deploying plugin ${thePluginDir}</echo>
+		<pluginname text="${thePluginDir}" property="plugin.name" />
+		<jar destfile="${thePluginDir}/${plugin.name}.jar" basedir="bin" includes="netlab/hub/plugins/${plugin.name}/**" />
+	</target>
+	
+	<!-- Define a custom task for extracting the plugin name from the directory name -->
+	<scriptdef name="pluginname" language="javascript">
+		<attribute name="text" />
+		<attribute name="property" />
+	    <![CDATA[
+	      var text = attributes.get("text");
+	      var start = text.lastIndexOf("/") + 1;
+	      project.setProperty(attributes.get("property"), text.substring(start));
+	    ]]>
+	</scriptdef>
+
+</project>
