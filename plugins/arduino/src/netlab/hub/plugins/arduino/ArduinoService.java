@@ -111,7 +111,11 @@ public class ArduinoService extends Service implements SerialPortClient {
 				}
 				String portName = availablePorts[0]; // Take the first matching name by default
 				int baud = request.argInt(1, 57600);
-				arduino = new Arduino(portName, baud);
+				try {
+					arduino = new Arduino(portName, baud);
+				} catch (RuntimeException e) {
+					throw new SerialException("Error opening serial port. The port may be in use by another application.");
+				}
 				SerialPortClientRegistry.register(portName, this);
 				if (boards.isEmpty()) { // If this is the first board, store the board reference under the default name pattern
 					boards.put("*", arduino);
@@ -120,8 +124,8 @@ public class ArduinoService extends Service implements SerialPortClient {
 				if (!portName.equals(portNamePattern)) {
 					boards.put(portNamePattern, arduino); // Also store the board reference under the port name pattern
 				}
+				response.write(new String[] {"OK", arduino.getPortName()});
 			}
-			response.write(new String[] {"OK", arduino.getPortName()});
 		} catch (Exception e) {
 			response.write(new String[] {"FAIL", e.toString()});
 		}
