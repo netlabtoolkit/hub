@@ -151,6 +151,9 @@ public class SerialService extends Service implements SerialEventHandler, Serial
 				listeners.put(portName, portListeners);
 			}
 			String pattern = request.getArgument(0);
+			if (pattern == null) {
+				pattern = "*";
+			}
 			Listener listener = new Listener(response, pattern);
 			if (!portListeners.contains(listener)) {
 				portListeners.add(listener);
@@ -168,15 +171,17 @@ public class SerialService extends Service implements SerialEventHandler, Serial
 		synchronized (this) {
 			List<Listener> portListeners = listeners.get(portName);
 			if (portListeners == null) {
-				portListeners = new ArrayList<Listener>();
-				listeners.put(portName, portListeners);
+				return;
 			}
 			String pattern = request.getArgument(0);
 			if (pattern == null) 
 				pattern = "*";
 			Listener listener = new Listener(response, pattern);
-			if (!portListeners.contains(listener)) {
-				portListeners.add(listener);
+			for (Iterator<Listener> it=portListeners.iterator(); it.hasNext();) {
+				if (it.next().equals(listener)) {
+					it.remove();
+					break;
+				}
 			}
 		}
 	}
@@ -225,16 +230,20 @@ public class SerialService extends Service implements SerialEventHandler, Serial
 		if (input == null) return;
 		input = input.trim();
 		if (input.length() == 0) return;
-		// We need to synchronize this because it is likely that
+		// We need to synchronize this because in the case that
 		// the serial port implementation runs in its own thread
-		// and we don't want to iterate through the listeners
+		// we don't want to iterate through the listeners
 		// while a hub command is modifying the listener list.
 		synchronized(this) {
-			List<Listener> portListeners = listeners.get(port.getName());
-			if (portListeners == null) return;
-			for (Iterator<Listener> it=portListeners.iterator(); it.hasNext();) {
-				Listener listener = it.next();
-				listener.processInput(input.trim());
+			String portName = port.getName();
+			if (listeners.containsKey(portName)) {
+				List<Listener> portListeners = listeners.get(portName);
+				for (Iterator<Listener> it=portListeners.iterator(); it.hasNext();) {
+					Listener listener = it.next();
+					listener.processInput(input);
+				}
+			} else {
+				System.out.println("No listener found for "+portName);
 			}
 		}
 	}

@@ -52,6 +52,7 @@ public class SerialPort {
 	public SerialPort(SerialEventHandler eventHandler, String name, int rate) throws SerialException {
 		this.self = this;
 		this.name = name;
+		this.eventHandler = eventHandler;
 		MacSerialFixer.check();
 		try {
 			this.serial = new Serial(new SerialProxy(), name, rate);
