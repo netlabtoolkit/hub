@@ -82,10 +82,10 @@ public class XBeeService extends Service implements SerialPortClient {
 	 * @see netlab.hub.core.Service#process(netlab.hub.core.ServiceMessage, netlab.hub.core.ServiceResponse)
 	 */
 	public void process(ServiceMessage request, ServiceResponse response) throws ServiceException {
-		String command = request.getPath().getLast();
-		if ("connect".equals(command)) {
+		if ("connect".equals(request.getPath().getLast())) {
 			commandConnect(request, response); 
 		} else {
+			String command = request.getPathElement(-1);
 			String portNamePattern = new ReadWriteRequest(request).getPortNamePattern();
 			XBeeNetwork network = xbees.get(portNamePattern);
 			if (network == null) {
@@ -114,7 +114,7 @@ public class XBeeService extends Service implements SerialPortClient {
 		try {
 			String portNamePattern = request.getArgument(0);
 			if (portNamePattern == null) {
-				throw new ServiceException("Missing serial port name paramater for /connect command");
+				throw new ServiceException("Missing serial port name parameter for /connect command");
 			}
 			XBeeNetwork network = xbees.get(portNamePattern);
 			if (network == null) {
@@ -178,7 +178,7 @@ public class XBeeService extends Service implements SerialPortClient {
 		try {
 			ReadWriteRequest req = new ReadWriteRequest(request);
 			String[] remoteIds = null;
-			if (req.getRemoteId().equals("*")) {
+			if ("*".equals(req.getRemoteId())) {
 				remoteIds = network.getAllRemoteIds();
 			} else {
 				remoteIds = new String[]{req.getRemoteId()};
@@ -191,6 +191,7 @@ public class XBeeService extends Service implements SerialPortClient {
 					value = digital ? xbee.digitalRead(req.getPin()) : xbee.analogRead(req.getPin());
 				}
 				response.write(returnAddress, value);
+				//network.testResponse();
 			}
 		} catch (Exception e) {
 			Logger.debug("Error reading from XBee network", e);

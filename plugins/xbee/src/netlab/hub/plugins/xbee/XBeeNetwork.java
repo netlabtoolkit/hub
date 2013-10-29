@@ -22,9 +22,6 @@ package netlab.hub.plugins.xbee;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-
 import netlab.hub.core.ServiceException;
 import netlab.hub.serial.SerialPort;
 import netlab.hub.util.Logger;
@@ -62,8 +59,6 @@ public class XBeeNetwork implements PacketListener {
 	 */
 	public XBeeNetwork() {
 		super();
-		this.baseStation = new XBee();
-		LogManager.getLogger("com.rapplogic.xbee.api.XBee").setLevel(Level.ERROR); // Override default "INFO" level because it is too verbose
 	}
 	
 	/**
@@ -89,13 +84,28 @@ public class XBeeNetwork implements PacketListener {
 			portName = portNames[0]; // In case of multiple matching ports, take the first one in the list
 			Logger.info("Opening serial port connection to XBee base station "+portName+" (rate="+baudRate+")...");
 			try {		
+				baseStation = new XBee();
 				baseStation.open(portName, baudRate);
 				Logger.info("Serial port connection to XBee base station at port "+portName+" established.");
+				ThreadUtil.pause(2000);
+				//baseStation.addPacketListener(this);
+				// Start the thread for processing the incoming messages. The packet listener
+				// built in to the XBee class is unreliable.
+				new Thread(new Runnable() {
+					public void run() {
+						while (true) {
+							try {
+								processResponse(baseStation.getResponse());
+							} catch (XBeeException e) {
+								Logger.debug("Error fetching XBee response", e);
+							}
+							ThreadUtil.pause(10);
+						}
+					}
+				}).start();
 			} catch (XBeeException e) {
 				throw new ServiceException("Error connecting to XBee", e);
 			}
-			ThreadUtil.pause(2000);
-			baseStation.addPacketListener(this);
 		} catch (Exception e) {
 			Logger.debug("Error connecting to XBee base station through serial port", e);
 		}
@@ -117,7 +127,10 @@ public class XBeeNetwork implements PacketListener {
 	
 	/* A packet has been received from the network so update the sample buffer
 	 * if the packet contains samples. The method of extracting samples from
-	 * the packet differs based on the XBee series number.
+	 * the packet differs based on the XBee series number. This method cannot
+	 * be properly refactored because the XBee API fails to define a sample
+	 * interface or common superclass and a common iteration pattern for 
+	 * series 1 and series 2 xbees.
 	 * See http://code.google.com/p/xbee-api/wiki/DevelopersGuide
 	 * @see com.rapplogic.xbee.api.PacketListener#processResponse(com.rapplogic.xbee.api.XBeeResponse)
 	 */
@@ -133,16 +146,22 @@ public class XBeeNetwork implements PacketListener {
 					if (xbee == null) {
 						xbee = new RemoteXBee(Integer.toString(remoteId, 16));
 						xbees.put(xbee.getId(), xbee);
+						Logger.debug("Received initial contact from remote XBee at address "+xbee.getId());
 					}
 					for (IoSample sample: ioSample.getSamples()) {
 						if (ioSample.containsAnalog()) {
 							for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
-								xbee.setAnalogSample(pin, sample.getAnalog(pin));
+								Integer value = sample.getAnalog(pin);
+								if (value == null) continue;
+								xbee.setAnalogSample(pin, value);
+								//System.out.println("Setting xbee addr="+xbee.getId()+" pin="+pin+" to value="+value);
 							}
 						}
 						if (ioSample.containsDigital()) {
 							for (int pin=0; pin<xbee.getDigitalPinCount(); pin++) {
-								xbee.setDigitalSample(pin, sample.isDigitalOn(pin) ? 1 : 0);
+								Boolean value = sample.isDigitalOn(pin);
+								if (value == null) continue;
+								xbee.setDigitalSample(pin, value == null || value.booleanValue() == false ? 0 : 1);
 							}
 						}
 					}
@@ -158,20 +177,25 @@ public class XBeeNetwork implements PacketListener {
 				if (xbee == null) {
 					xbee = new RemoteXBee(Integer.toString(remoteId, 16));
 					xbees.put(xbee.getId(), xbee);
+					Logger.debug("Received initial contact from remote XBee at address "+xbee.getId());
 				}
 				if (sample.containsAnalog()) {
 					for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
-						xbee.setAnalogSample(pin, sample.getAnalog(pin));
+						Integer value = sample.getAnalog(pin);
+						if (value == null) continue;
+						xbee.setAnalogSample(pin, value);
 					}
 				}
 				if (sample.containsDigital()) {
 					for (int pin=0; pin<xbee.getDigitalPinCount(); pin++) {
-						xbee.setDigitalSample(pin, sample.isDigitalOn(pin) ? 1 : 0);
+						Boolean value = sample.isDigitalOn(pin);
+						if (value == null) continue;
+						xbee.setDigitalSample(pin, value == null || value.booleanValue() == false ? 0 : 1);
 					}
 				}
 			}
 		}
-	}
+	} 
 	
 	/**
 	 * @return
