@@ -22,6 +22,7 @@ package netlab.hub.plugins.tools.utility;
 
 import netlab.hub.core.Service;
 import netlab.hub.core.ServiceException;
+import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
 
 /**
@@ -29,6 +30,10 @@ import netlab.hub.core.ServiceResponse;
  *
  */
 public class HelloWorldService extends Service {
+	
+	public void process(ServiceMessage request, ServiceResponse response) throws ServiceException {
+		System.out.println(request);
+	}
 	
 	/**
 	 * Demonstrates auto-dispatching for message [servicepath]/say
