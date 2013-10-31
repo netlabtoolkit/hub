@@ -63,6 +63,9 @@ public class ArduinoService extends Service implements SerialPortClient {
 			commandPinMode(request, response, getBoard(request.getPathElement(0)));
 		} 
 		else {
+			if (request.getPath().size() < 3) {
+				throw new ServiceException("Illegal path: ["+request.getPathString()+"]");
+			}
 			commandReadWrite(request, response, getBoard(request.getPathElement(0)));
 		}
 	}
