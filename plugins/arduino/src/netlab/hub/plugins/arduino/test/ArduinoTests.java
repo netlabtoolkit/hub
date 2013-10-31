@@ -2,171 +2,109 @@ package netlab.hub.plugins.arduino.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import netlab.hub.core.ResponseMessage;
 import netlab.hub.core.ServiceException;
-import netlab.hub.core.ServiceMessage;
-import netlab.hub.core.ServiceResponse;
 import netlab.hub.plugins.arduino.Arduino;
+import netlab.hub.plugins.arduino.ArduinoFactory;
 import netlab.hub.plugins.arduino.ArduinoService;
 import netlab.hub.serial.SerialException;
-import netlab.hub.serial.SerialPort;
-import netlab.hub.util.MockResponse;
+import netlab.hub.test.integration.ServiceMessageTester;
+import netlab.hub.test.mocks.MockServiceResponse;
+import netlab.hub.util.ThreadUtil;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ArduinoTests {
 	
-	static MockArduino board;
-	static String portName;
-	
-	
-	@BeforeClass
-    public static void setUpClass() throws Exception {
-		portName = "/dev/cu.usbserial-A1234Q";
-		board = new MockArduino(portName);
-    }
-	
 	@Test
-	public void testProcess() throws ServiceException {
-		class TestService extends ArduinoService {
-			Arduino board;
-			ServiceMessage request;
-			String command;
-			public TestService() {
-				super();
-				boards.put(portName, board);
-			}
-			public void commandConnect(ServiceMessage request, ServiceResponse response) throws ServiceException {
-				this.request = request;
-				this.command = "connect";
-			}
-			public void commandPinMode(ServiceMessage request, ServiceResponse response, Arduino arduino) throws ServiceException {
-				this.request = request;
-				this.command = "pinmode";
-				this.board = arduino;
-			}
-			public void commandReadWrite(ServiceMessage request, ServiceResponse response, Arduino arduino) throws ServiceException {
-				this.request = request;
-				this.command = "readwrite";
-				this.board = arduino;
-			}
-		}
+	public void testArduinoService() throws ServiceException {
 		
-		TestService service = new TestService();
-		ServiceMessage request = new ServiceMessage("/service/arduino/reader-writer/connect "+portName);
-		service.process(request, new MockResponse(request));
-		assertEquals(service.request, request);
-		assertEquals(service.command, "connect");
+		ArduinoService service = new ArduinoService(new ArduinoFactory() {
+			public Arduino newArduinoInstance(String port, int baud) {
+				//return new Arduino(port, baud);
+				try {
+					return new MockArduino(port, baud);
+				} catch (SerialException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+		});
 		
-		request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 input");
-		service.setBoard(portName, board);
-		service.process(request, new MockResponse(request));
-		assertEquals(service.request, request);
-		assertEquals(service.command, "pinmode");
-		assertEquals(service.board.getPortName(), portName);
+		ServiceMessageTester test = new ServiceMessageTester(service);
+		MockServiceResponse response;
+		ResponseMessage responseMsg;
+		MockArduino board;
 		
-		request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/digitalout 9 1");
-		service.setBoard(portName, board);
-		service.process(request, new MockResponse(request));
-		assertEquals(service.request, request);
-		assertEquals(service.command, "readwrite");
-		assertEquals(service.board.getPortName(), portName);
-	}
-	
-	@Test
-	public void testConnect() throws SerialException {
-		String[] availablePorts = SerialPort.list("/dev/cu.usb*");
-		if (availablePorts.length == 0) {
-			System.out.println("No USB device found. Skipping testConnect()");
-			return;
-		}
-		ArduinoService service = new ArduinoService();
-		ServiceMessage request = new ServiceMessage("/service/arduino/reader-writer/connect /dev/cu.usb* 57600");
-		MockResponse response = new MockResponse(request);
+		// Try sending a message before connecting.
+		// Expected result: Service should throw an exception with the message "No board connected"
 		try {
-			service.process(request, response);
+			response = test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0");
+			assertTrue("Service should have thrown exception", false);
 		} catch (ServiceException e) {
-			assertTrue(e.toString(), false);
-		}
-		assertEquals(response.getMessage().getArguments().get(0).toString(), "OK");
-		try {
-			assertEquals(service.getBoard("*").getPortName(), portName);
-		} catch (ServiceException e) {
-			assertTrue(e.toString(), false);
+			assertEquals(e.getMessage().indexOf("No board connected"), 0);
 		}
 		
-		request = new ServiceMessage("/service/arduino/reader-writer/connect /dev/cu.usbxyz* 57600");
-		response = new MockResponse(request);
-		try {
-			service.process(request, response);
-		} catch (ServiceException e) {
-			assertTrue(e.toString(), false);
-		}
-		assertEquals(response.getMessage().getArguments().get(0).toString(), "FAIL");
+		// Try connecting to a non-existent serial port
+		// Expected result: Service should report a FAIL message
+		response = test.send("/service/arduino/reader-writer/connect {/xyz}");
+		responseMsg = response.get(0);
+		assertEquals("FAIL", responseMsg.getArguments().get(0));
+		
+		// Try connecting to a legal serial port
+		// Expected result: Service should report an OK message
+		response = test.send("/service/arduino/reader-writer/connect {/dev/cu.usb*}");
+		responseMsg = response.get(0);
+		assertEquals("OK", responseMsg.getArguments().get(0));
+		
+		// Try connecting to an already connected Arduino
+		// Expected result: Service should report an OK message
+		response = test.send("/service/arduino/reader-writer/connect {/dev/cu.usb*}");
+		responseMsg = response.get(0);
+		assertEquals("OK", responseMsg.getArguments().get(0));
+		
+		// Try setting digital pin 9 to high
+		// Expected result: board should have digital pin 2 low, then high, then low
+		board = (MockArduino)service.getBoard("/dev/cu.usb*");
+		board.digitalPins = new int[]{0, 0, 0};
+		test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/digitalout/2 1");
+		assertEquals(0, board.digitalPins[0]);
+		assertEquals(0, board.digitalPins[1]);
+		assertEquals(1, board.digitalPins[2]);
+		test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/digitalout/2 0");
+		assertEquals(0, board.digitalPins[2]);
 
-	}
-	
-	@Test
-	public void testPinMode() {
+		// Try sending an illegal message
+		// Expected result: Service should throw an exception
 		try {
-			ArduinoService service = new ArduinoService();
-			board.clearWriteBuffer();
-			ServiceMessage request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 input");
-			service.commandPinMode(request, new MockResponse(request), board);
-			int[] bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 3);
-			assertEquals(bytesWritten[0], Arduino.SET_PIN_MODE);
-			assertEquals(bytesWritten[1], 9);
-			assertEquals(bytesWritten[2], Arduino.INPUT);
-			board.clearWriteBuffer();
-			request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 output");
-			service.commandPinMode(request, new MockResponse(request), board);
-			bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 3);
-			assertEquals(bytesWritten[2], Arduino.OUTPUT);
-			board.clearWriteBuffer();
-			request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 analog");
-			service.commandPinMode(request, new MockResponse(request), board);
-			bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 3);
-			assertEquals(bytesWritten[2], Arduino.ANALOG);
-			board.clearWriteBuffer();
-			request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 pwm");
-			service.commandPinMode(request, new MockResponse(request), board);
-			bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 3);
-			assertEquals(bytesWritten[2], Arduino.PWM);
-			board.clearWriteBuffer();
-			request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/pinmode 9 servo");
-			service.commandPinMode(request, new MockResponse(request), board);
-			bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 3);
-			assertEquals(bytesWritten[2], Arduino.SERVO);
-		} catch (Exception e) {
-			e.printStackTrace();
-			assertTrue(e.toString(), false);
-		}
-	}
-	
-	@Test
-	public void testReadWrite() {
-		try {
-			ArduinoService service = new ArduinoService();
-			board.clearWriteBuffer();
-			ServiceMessage request = new ServiceMessage("/service/arduino/reader-writer/{"+portName+"}/digitalout/9/value 1");
-			service.commandReadWrite(request, new MockResponse(request), board);
-			int[] bytesWritten = board.getBytesWritten();
-			assertEquals(bytesWritten.length, 6);
-			assertEquals(bytesWritten[0], Arduino.SET_PIN_MODE);
-			assertEquals(bytesWritten[1], 9);
-			assertEquals(bytesWritten[2], Arduino.OUTPUT);
-			board.clearWriteBuffer();
-			// TODO other messages
-		} catch (Exception e) {
-			e.printStackTrace();
-			assertTrue(e.toString(), false);
+			response = test.send("/service/arduino/reader-writer/a/b");
+			assertTrue("Service should have thrown exception", false);
+		} catch (ServiceException e) {
+			assertEquals(0, e.getMessage().indexOf("Illegal path"));
 		}
 		
+		// Try reading from analog pin 0
+		// Expected result: Service should return an int between 1 and 1023
+		// Need to send a few messages and wait for board to initialize
+		for (int i=0; i<50; i++) {
+			response = test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0");
+			ThreadUtil.pause(100);
+		}
+		response = test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0");
+		responseMsg = response.get(0);
+		assertEquals(0, responseMsg.toString().indexOf("/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0 "));
+		int val = Integer.parseInt(responseMsg.getArguments().get(0).toString());
+		assertTrue(0 < val && val < 1024);
+		
+		// Call release ports and try sending a message before reconnecting.
+		// Expected result: Service should throw an exception with the message "No board connected"
+		service.releasePorts();
+		try {
+			response = test.send("/service/arduino/reader-writer/{/dev/cu.usb*}/analogin/0");
+			assertTrue("Service should have thrown exception", false);
+		} catch (ServiceException e) {
+			assertEquals(e.getMessage().indexOf("No board connected"), 0);
+		}
 	}
 
 }

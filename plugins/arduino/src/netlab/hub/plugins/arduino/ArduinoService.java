@@ -41,6 +41,8 @@ import netlab.hub.util.ThreadUtil;
  */
 public class ArduinoService extends Service implements SerialPortClient {
 	
+	ArduinoFactory boardFactory = new ArduinoFactory(); // Override for unit testing
+	
 	protected HashMap<String, Arduino> boards = new HashMap<String, Arduino>(); // Keyed by original port pattern
 					
 	/**
@@ -48,6 +50,12 @@ public class ArduinoService extends Service implements SerialPortClient {
 	 */
 	public ArduinoService() {
 		super();
+		boardFactory = new ArduinoFactory();
+	}
+	
+	public ArduinoService(ArduinoFactory boardFactory) {
+		super();
+		this.boardFactory = boardFactory;
 	}
 	
 	/* (non-Javadoc)
@@ -115,7 +123,7 @@ public class ArduinoService extends Service implements SerialPortClient {
 				String portName = availablePorts[0]; // Take the first matching name by default
 				int baud = request.argInt(1, 57600);
 				try {
-					arduino = new Arduino(portName, baud);
+					arduino = boardFactory.newArduinoInstance(portName, baud);
 				} catch (RuntimeException e) {
 					throw new SerialException("Error opening serial port. The port may be in use by another application.");
 				}

@@ -5,8 +5,8 @@ import netlab.hub.serial.SerialException;
 
 public class MockArduino extends Arduino {
 	
-	int[] writeBuffer;
-	int bytesWritten = 0;
+	public int[] digitalPins;
+	public int[] analogPins;
 
 	public MockArduino(String portName) throws SerialException {
 		super(portName);
@@ -20,29 +20,14 @@ public class MockArduino extends Arduino {
 		capabilitiesResponseCallback();
 	}
 	
-	public int[] getBytesWritten() {
-		int[] bytes = new int[bytesWritten];
-		for (int i=0; i<bytesWritten; i++) {
-			bytes[i] = writeBuffer[i];
-		}
-		return bytes;
+	public void digitalWrite(int pin, int value) {
+		super.digitalWrite(pin, value);
+		if (digitalPins != null) digitalPins[pin] = value;
 	}
 	
-	public void clearWriteBuffer() {
-		writeBuffer = new int[1024];
-		bytesWritten = 0;
-	}
-
-	@Override
-	public int serialRead() {
-		return 0;
-	}
-
-	@Override
-	public void serialWrite(int value) {
-		if (writeBuffer == null)
-			clearWriteBuffer();
-		writeBuffer[bytesWritten++] = value;
+	public void analogWrite(int pin, int value) {
+		super.analogWrite(pin, value);
+		if (analogPins != null) analogPins[pin] = value;
 	}
 
 }
