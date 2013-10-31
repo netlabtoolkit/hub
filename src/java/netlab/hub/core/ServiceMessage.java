@@ -331,7 +331,7 @@ public class ServiceMessage {
 		return (Double)getArgument(index, Double.class);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Object getArgument(int index, Class cls) throws ServiceException {
 		String arg = getArgument(index);
 		if (arg == null) throw new ServiceException("No argument ["+index+"]");

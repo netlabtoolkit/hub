@@ -124,8 +124,8 @@ public class ArduinoService extends Service implements SerialPortClient {
 				if (!portName.equals(portNamePattern)) {
 					boards.put(portNamePattern, arduino); // Also store the board reference under the port name pattern
 				}
-				response.write(new String[] {"OK", arduino.getPortName()});
 			}
+			response.write(new String[] {"OK", arduino.getPortName()});
 		} catch (Exception e) {
 			response.write(new String[] {"FAIL", e.toString()});
 		}
