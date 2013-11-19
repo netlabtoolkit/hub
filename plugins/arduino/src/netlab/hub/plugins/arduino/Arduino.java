@@ -88,6 +88,8 @@ public class Arduino {
 	int[] analogInputData;
 	int[] digitalOutputData;
 	
+	int[] pinModes;
+	
 	List<PinCapabilities> capabilities = new ArrayList<PinCapabilities>();
 	int analogPinCount = 0;
 	int digitalPinCount = 0;
@@ -177,6 +179,11 @@ public class Arduino {
 	 * 
 	 */
 	public void begin() {
+		// Create buffer to store pin modes
+		pinModes = new int[1000];
+		for (int i=0; i<pinModes.length; i++) {
+			pinModes[i] = Arduino.INPUT;
+		}
 		// Required to start the session. No firmware or capabilities reporting works until this is sent. Why????
 		for (int pin=0; pin<1; pin++) {
 			serialWrite(REPORT_ANALOG | pin);
@@ -287,12 +294,15 @@ public class Arduino {
 	 * Set a digital pin to input or output mode.
 	 *
 	 * @param pin the pin whose mode to set
-	 * @param mode either Arduino.INPUT or Arduino.OUTPUT
+	 * @param mode
 	 */
 	public void pinMode(int pin, int mode) {
-		serialWrite(SET_PIN_MODE);
-		serialWrite(pin);
-		serialWrite(mode);
+		if (pinModes[pin] != mode) {
+			serialWrite(SET_PIN_MODE);
+			serialWrite(pin);
+			serialWrite(mode);
+			pinModes[pin] = mode;
+		}
 	}
 
 	/**

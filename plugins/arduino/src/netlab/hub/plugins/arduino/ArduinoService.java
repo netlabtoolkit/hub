@@ -127,6 +127,7 @@ public class ArduinoService extends Service implements SerialPortClient {
 				} catch (RuntimeException e) {
 					throw new SerialException("Error opening serial port. The port may be in use by another application.");
 				}
+				ThreadUtil.pause(3000);
 				SerialPortClientRegistry.register(portName, this);
 				if (boards.isEmpty()) { // If this is the first board, store the board reference under the default name pattern
 					boards.put("*", arduino);
