@@ -40,11 +40,11 @@ public class DevLauncherApplet extends PApplet {
 	
 	Hub hub;
 	HubDesktopApplication app;
-	
-	
+		
 	public void setup() {
+				
 		frameRate(10); // Looping is needed for ControlP5 GUI, but 10 fps is plenty.
-
+		
 		// Create the Hub instance
 		String base = System.getProperty("netlab.hub.base");
 		if (base == null) {
@@ -72,11 +72,5 @@ public class DevLauncherApplet extends PApplet {
 	
 	public void controlEvent(ControlEvent e) {
 		app.controlEvent(e);
-	}
-	
-	public void stop() {
-	  	if (hub != null) {
-			hub.quit();
-		}
 	}
 }

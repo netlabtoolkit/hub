@@ -62,12 +62,6 @@ void draw() {
   background(0);
 }
 
-void stop() {
-  if (hub != null) {
-    hub.quit();
-  }
-}
-
 public void controlEvent(ControlEvent e) {
   app.controlEvent(e);
 }

@@ -20,10 +20,14 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 package netlab.hub.processing.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.TextArea;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -70,8 +74,9 @@ public class HubDesktopApplication implements IDataActivityMonitor, ISessionLife
 	
 	List<String> clients = new ArrayList<String>();
 	
-	public HubDesktopApplication(Hub hub, PApplet parent) {
+	public HubDesktopApplication(Hub hub, PApplet applet) {
 		this.hub = hub;
+		HubDesktopApplication.parent = applet;
 		hub.setHubLifecycleMonitor(this);
 		hub.setDataActivityMonitor(this);
 		hub.setSessionLifecycleMonitor(this);
@@ -79,20 +84,42 @@ public class HubDesktopApplication implements IDataActivityMonitor, ISessionLife
 		// See http://wiki.processing.org/w/Export_Info_and_Tips
 		if (PApplet.platform == PApplet.WINDOWS) {
 			File winIcon = new File(new File(hub.getRootDir(), "data"), "iconsmall.png");
-			ImageIcon winTitlebaricon = new ImageIcon(parent.loadBytes(winIcon.getAbsolutePath()));
-			parent.frame.setIconImage(winTitlebaricon.getImage());
+			ImageIcon winTitlebaricon = new ImageIcon(applet.loadBytes(winIcon.getAbsolutePath()));
+			applet.frame.setIconImage(winTitlebaricon.getImage());
 		}
 		File mainIconFile = new File(new File(hub.getRootDir(), "data"), "iconlarge.jpg");
-		PImage mainIconImg = parent.loadImage(mainIconFile.getAbsolutePath());
-		this.mainWindow = new MainWindow(mainIconImg, parent);
+		PImage mainIconImg = applet.loadImage(mainIconFile.getAbsolutePath());
+		this.mainWindow = new MainWindow(mainIconImg, applet);
 		this.logWindow = new LogWindow();
-		HubDesktopApplication.parent = parent;
 		GUILogger.gui = new IGUILogger() {
 			public void print(String msg) {
 				logWindow.print(msg);
 				mainWindow.logPanel.append(msg, 30);
 			}
 		};
+		// Make sure we shut down when the window is closed.
+		Window window = getWindow(applet);
+		if (window != null) {
+			window.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					System.exit(0);
+				}
+			});
+		}
+	}
+	
+	/**
+	 * Recursively find the parent Window of a given component.
+	 * @param component
+	 * @return
+	 */
+	public Window getWindow(Component component) {
+		if (component == null) return null;
+		if (component instanceof Window) {
+			return (Window)component;
+		} else {
+			return getWindow(component.getParent());
+		}
 	}
 	
 	public void showDashboardPage(String command) {
@@ -226,7 +253,7 @@ class MainWindow {
 		StringBuffer intro = new StringBuffer();
 		//intro.append(Config.getAppVersion()).append("\n").append("\n");
 		intro.append("Part of the NETLab Toolkit open project").append("\n");
-		intro.append("(c) 2012 Phil Van Allen and Ewan Branda").append("\n");
+		intro.append("(c) 2013 Phil Van Allen and Ewan Branda").append("\n");
 		tagline.setText(intro.toString());
 		
 		appNameLabel = controls.addTextlabel("appnamelabel")

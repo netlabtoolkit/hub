@@ -103,7 +103,7 @@ public class Hub {
 	}
 	
 	public void restart() {
-		shutdown();
+		dispose();
 		start();
 	}
 	
@@ -202,15 +202,14 @@ public class Hub {
 				}
 			}
 			
-			// Add the shutdown hook
-			//if (System.getProperty("os.name").startsWith("Mac OS")) {
-				Runtime.getRuntime().addShutdownHook(
-						new Thread(new Runnable() {
-							public void run() {
-								shutdown();
-							}
-						}, "Shutdown Hook"));
-			//}
+			// Ask the Hub to shut itself down when the Java VM shuts down.
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				public void run() {
+					try { 
+						dispose(); 
+					} catch (Exception e) {}
+				}
+			}, "Shutdown Hook"));
 			
 			// Initialize the message dispatcher
 			Dispatcher dispatcher = new Dispatcher();
@@ -269,38 +268,37 @@ public class Hub {
 		}
 	}
 	
-	private synchronized void shutdown() {
+	public synchronized void dispose() {
 		if (running) {
-			Logger.debug("Shutting down the Hub...");
-			if (server != null) {
-				server.stop();
-			}
-			if (wsServer != null) {
-				wsServer.stop();
-			}
-			Logger.debug("Shutting down services...");
-			ServiceConfig.clearAll();
-			try {
-				for (Iterator<Service> it=ServiceRegistry.getAll().iterator(); it.hasNext();) {
-					it.next().dispose();
+			// Run the shutdown routine in its own thread so we can
+			// pause the application shutdown to allow services to 
+			// clean up resources such as serial ports.
+			new Thread(new Runnable() {
+				public void run() {
+					Logger.info("Shutting down the Hub...");
+					if (server != null) {
+						server.stop();
+					}
+					if (wsServer != null) {
+						wsServer.stop();
+					}
+					Logger.debug("Shutting down services...");
+					ServiceConfig.clearAll();
+					try {
+						for (Iterator<Service> it=ServiceRegistry.getAll().iterator(); it.hasNext();) {
+							it.next().dispose();
+						}
+						ServiceRegistry.clear();
+					} catch (ServiceException e) {
+						Logger.error("Error shutting down service registry", e);
+					}
+					Logger.debug("Services shut down.");
 				}
-				ServiceRegistry.clear();
-			} catch (ServiceException e) {
-				Logger.error("Error shutting down service registry", e);
-			}
-			Logger.debug("Services shut down.");
+			}).start();
+			ThreadUtil.pause(1000);
+			Logger.info("Goodbye.");
 		}
-		Logger.debug("Hub shut down.");
 		running = false;
-	}
-	
-	/**
-	 * 
-	 */
-	public void quit() {
-		shutdown();
-		Logger.info("Goodbye.");
-		System.exit(0);
 	}
 	
 	
