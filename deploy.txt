@@ -28,3 +28,18 @@ To deploy a full version of the Hub with plugins:
 Note: Mac icon is copied to the .app bundle by the Ant script in step 5. Windows icon is set at 
 runtime in the Java app, but desktop icon needs to be set from Windows using Resource Hacker
 (see http://www.infotechywiz.com/2012/06/how-to-modify-exe-files.html)
+
+
+To create the release on GitHub:
+
+Rename built apps from "application.*" to "NETLab_Hub-5.0.1.*"
+Build zips and tar.gz files
+
+In SourceTree:
+Click "Tag" and create a tag in master branch ("v5.0.1")
+Push to origin
+
+In GitHub:
+Click "Releases" tab.
+Create the release based on the tag (e.g. "v5.0.1" @ Target: master)
+Upload the binaries created above.
