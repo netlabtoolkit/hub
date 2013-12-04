@@ -187,7 +187,7 @@ public class ArduinoService extends Service implements SerialPortClient {
 			response.write(arduino.analogRead(pin));
 		} else
 		if ("digitalin".equalsIgnoreCase(pinType)) {
-			arduino.pinMode(pin, Arduino.INPUT); // Is this doing anything? We are only reading from a buffer.
+			arduino.pinMode(pin, Arduino.INPUT);
 			response.write(arduino.digitalRead(pin));
 		} else
 		if ("analogout".equalsIgnoreCase(pinType)) {
