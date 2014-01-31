@@ -52,7 +52,7 @@ public class DispatcherPoller {
 		this.lastPollTime = System.currentTimeMillis();
 		this.maxNumberPolls = 0;
 		this.pollCount = 0;
-		setSampleRate(30);
+		setSampleRate(30); // Default is 30 fps
 	}
 	
 	public void setSampleRate(int fps) {

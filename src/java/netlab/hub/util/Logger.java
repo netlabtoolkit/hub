@@ -92,16 +92,19 @@ public class Logger {
 	
 	public static void debug(Throwable t) {
 		if (!configured) return;
+		if (!isDebug()) return; // Avoid unnecessary string processing
 		org.apache.log4j.Logger.getLogger("ROOT").error(getStackTrace(t));
 	}
 	
 	public static void debug(Object arg) {
 		if (!configured) return;
+		if (!isDebug()) return; // Avoid unnecessary string processing
 		org.apache.log4j.Logger.getLogger("ROOT").debug(arg);
 	}
 	
 	public static void debug(Object arg, Throwable t) {
 		if (!configured) return;
+		if (!isDebug()) return; // Avoid unnecessary string processing
 		org.apache.log4j.Logger.getLogger("ROOT").debug(arg);
 		org.apache.log4j.Logger.getLogger("ROOT").error(getStackTrace(t));
 	}
