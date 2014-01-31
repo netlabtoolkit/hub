@@ -1,0 +1,38 @@
+<!DOCTYPE PlugIn>
+<PlugIn version="core">
+
+	<Services>
+
+		<!-- 
+		**************************************************
+		SUPPORTED COMMANDS
+		**************************************************
+		
+		
+		*************************
+		/service/httpclient/[servicename]/[method]/[url]
+		
+			Returns: Response received from server, without headers
+			Connects to the provided url over http. Sends response content
+			back to the client as a value.
+			- method must be "get" or "post" (only "get" is supported for now)
+			- url should omit the protocol prefix (e.g. "http://")
+			
+			Example of one-time read:
+				/service/httpclient/reader/get/192.168.1.10/arduino/analog/0
+				
+			Example of standard Hub polling mechanism (see [hubroot]/commands.txt for details): 
+				/service/httpclient/reader/poll /get/192.168.1.10/arduino/analog/0
+				
+		-->
+		
+		
+		<Service enabled="true" name="reader" type="netlab.hub.plugins.httpclient.HttpClientService">
+			<Description>
+				Service for generic HTTP client communication with a remote server.
+			</Description>
+		</Service>
+		
+	</Services>
+	
+</PlugIn>
