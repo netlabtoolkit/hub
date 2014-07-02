@@ -3,7 +3,7 @@ and a Processing-based standalone app. The build sequence involves deploying the
 core GUI-less app (build-core.xml), deploying the sketch to Processing (deploy-sketch.xml),
 opening Processing and exporting the standlone apps, and deploying the standalone
 apps created by Processing's export (deploy-applications.xml).
-
+Build folder: /Users/ewan/Workspaces/Eclipse/NETLab_Hub/build
 
 To deploy a full version of the Hub with plugins:
 
@@ -15,7 +15,7 @@ To deploy a full version of the Hub with plugins:
 3. 	Run the deploy-sketch.xml Ant script. This will copy the newest Hub application files and supporting folders to the 
 	build/processing folder and deploy the "NETLabHub" sketch to the local Processing sketchbook.
 
-4. 	Open the Processing sketch "NETLabHub" and choose File > Export Application. 
+4. 	Open the Processing sketch "NETLabHub" using Processing 2.0.1 and choose File > Export Application. 
 	(This will create the standalone apps in the corresponding folders in the sketch folder.)
 	
 5. 	Run the deploy-applications.xml Ant script. This will copy all support folders into each exported standalone app folder.
