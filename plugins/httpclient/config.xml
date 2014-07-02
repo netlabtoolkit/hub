@@ -27,7 +27,7 @@
 		-->
 		
 		
-		<Service enabled="true" name="reader" type="netlab.hub.plugins.httpclient.HttpClientService">
+		<Service enabled="true" name="reader-writer" type="netlab.hub.plugins.httpclient.HttpClientService">
 			<Description>
 				Service for generic HTTP client communication with a remote server.
 			</Description>
