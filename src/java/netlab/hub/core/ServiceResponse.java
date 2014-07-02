@@ -107,7 +107,7 @@ public class ServiceResponse {
 	}
 
 	public boolean isForClient(ClientSession client) {
-		return this.client == client;
+		return this.client == client; // TODO this needs to be more robust
 	}
 	
 	public boolean clientEquals(ServiceResponse other) {
