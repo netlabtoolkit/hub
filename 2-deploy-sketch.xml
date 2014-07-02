@@ -2,7 +2,7 @@
 	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
-			<pathelement location="${user.home}/Documents/Eclipse_workspace/java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
+			<pathelement location="../java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
 		</classpath>
 	</taskdef>
 	
@@ -12,7 +12,7 @@
 	<!-- <tstamp><format property='build.time' pattern='yyyy-MM-dd'/></tstamp> -->
 	<property name="sketch.name" value="NETLabHub" />
 	<property name="deploy.dir" value="build/processing"/>
-	<property name="sketchbook.dir" value="${user.home}/Documents/Processing"/>
+	<property name="sketchbook.dir" value="${user.home}/Workspaces/Processing"/>
 	<property name="core.source.dir" value="build/core" />
 	
 	<!--

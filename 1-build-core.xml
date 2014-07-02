@@ -1,10 +1,10 @@
 <project name="deploy" default="deploy" basedir=".">
 	
-	<property name="build.version" value="5.0.2" />
+	<property name="build.version" value="5.1.2" />
 	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
-			<pathelement location="${user.home}/Documents/Eclipse_workspace/java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
+			<pathelement location="../java_libs/apache-ant-1.6.2/lib/ant-contrib-1.0b3.jar"/>
 		</classpath>
 	</taskdef>
 	
