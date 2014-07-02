@@ -11,7 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import netlab.hub.core.ServiceMessage;
 import netlab.hub.core.ServiceResponse;
+<<<<<<< Updated upstream
 import netlab.hub.util.Logger;
+=======
+>>>>>>> Stashed changes
 import netlab.hub.util.ThreadUtil;
 
 import org.apache.commons.io.IOUtils;
@@ -26,10 +29,16 @@ import org.apache.http.impl.client.HttpClients;
 public class HttpRequestDispatcher {
 	
 	CloseableHttpClient httpClient;
+<<<<<<< Updated upstream
 	Queue<ServiceRequest> stagedRequests = new ConcurrentLinkedQueue<ServiceRequest>();
 	int maximumRequestQueueSize = 10;
 	boolean running = false;
 	boolean realTimeMode = false;
+=======
+	Queue<ServiceRequest> requests = new ConcurrentLinkedQueue<ServiceRequest>();
+	int maximumRequestQueueSize = 10;
+	boolean running = false;
+>>>>>>> Stashed changes
 	
 	/**
 	 * @param requestsPerSecond
@@ -38,11 +47,14 @@ public class HttpRequestDispatcher {
 		super();
 	}
 	
+<<<<<<< Updated upstream
 	public void setRealTimeMode(boolean m) {
 		this.realTimeMode = m;
 		Logger.debug("Changing real time mode to "+m);
 	}
 	
+=======
+>>>>>>> Stashed changes
 	public void setMaximumRequestQueueSize(int max) {
 		this.maximumRequestQueueSize = max;
 	}
@@ -54,6 +66,7 @@ public class HttpRequestDispatcher {
 	public void add(ServiceMessage request, ServiceResponse response) 
 			throws DispatcherException, RequestQueueOverflowException {
 		//System.out.println("queue size = "+requests.size());
+<<<<<<< Updated upstream
 		synchronized(this) {
 			if (stagedRequests.size() == maximumRequestQueueSize) {
 				throw new RequestQueueOverflowException();
@@ -108,6 +121,27 @@ public class HttpRequestDispatcher {
 				}
 			}
 		}
+=======
+		if (requests.size() == maximumRequestQueueSize) {
+			throw new RequestQueueOverflowException();
+		}
+		String uri = request.getPathString(false, 1);
+		if (uri == null || uri.length() < 2)
+			throw new DispatcherException("Missing URL parameter for get command");
+		uri = "http://"+uri.substring(1);
+		Properties headers = new Properties();
+		if (request.hasArgument(0)) {
+			try {
+				headers.load(new StringReader(request.getArgument(0).replaceAll(",", "\n")));
+			} catch (IOException e) {
+				throw new DispatcherException("Error parsing headers", e);
+			}
+		}
+		ServiceRequest req = new ServiceRequest(ServiceRequest.GET, uri, headers, response);
+		if (!requests.contains(req)) {
+			requests.add(req);
+		}
+>>>>>>> Stashed changes
 	}
 	
 	/**
@@ -119,23 +153,32 @@ public class HttpRequestDispatcher {
 	            .setSocketTimeout(3000)
 	            .setConnectTimeout(3000).build();
 	    httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
+<<<<<<< Updated upstream
 	    final Object mutex = this;
+=======
+>>>>>>> Stashed changes
 		new Thread(new Runnable() {
 			public void run() {
 				running = true;
 				while (running) {
+<<<<<<< Updated upstream
 					Queue<ServiceRequest> requests = new ConcurrentLinkedQueue<ServiceRequest>();
 					synchronized(mutex) {
 						requests.addAll(stagedRequests);
 						stagedRequests.clear();
 					}
+=======
+>>>>>>> Stashed changes
 					while (requests.size() > 0) {
 						final ServiceRequest request = requests.poll(); // Fetch and remove the next request in the queue
 						//System.out.println("queue size after fetch = "+requests.size());
 		            	HttpGet get = new HttpGet(request.uri);
 		            	addHeaders(request, get);
 		    			try {
+<<<<<<< Updated upstream
 		    				//System.out.println("Executing GET "+request.uri);
+=======
+>>>>>>> Stashed changes
 		    				HttpResponse httpResponse = httpClient.execute(get);
 		    				String content = getResponseContent(httpResponse);
 	                        if (content != null && content.length() > 0) {
@@ -230,6 +273,7 @@ class ServiceRequest {
 		}
 		return false;
 	}
+<<<<<<< Updated upstream
 	
 	public void copyFrom(ServiceRequest other) {
 		this.type = other.type;
@@ -238,6 +282,8 @@ class ServiceRequest {
 		this.client = other.client;
 		this.created = other.created;
 	}
+=======
+>>>>>>> Stashed changes
 
 }
 

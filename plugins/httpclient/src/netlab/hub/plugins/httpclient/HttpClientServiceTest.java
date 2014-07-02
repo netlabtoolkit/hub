@@ -35,6 +35,7 @@ public class HttpClientServiceTest {
 
 		HttpClientService service = new HttpClientService();
 		service.init();
+<<<<<<< Updated upstream
 		request = new ServiceMessage("/service/httpclient/realtime-reader-writer/setrealtime 1");
 		response = new TestServiceResponse(request, client);
 		try {
@@ -45,6 +46,10 @@ public class HttpClientServiceTest {
 		for (int i=0; i<1000; i++) {
 			//request = new ServiceMessage("/service/httpclient/reader-writer/get/localhost/hubtest/yun.php?i="+i+" {} /localhost/hubtest");
 			request = new ServiceMessage("/service/httpclient/realtime-reader-writer/get/localhost/hubtest/yun.php");
+=======
+		for (int i=0; i<1000; i++) {
+			request = new ServiceMessage("/service/rest/reader-writer/get/localhost/hubtest/yun.php");
+>>>>>>> Stashed changes
 			response = new TestServiceResponse(request, client);
 			try {
 				service.process(request, response);
@@ -84,6 +89,10 @@ class TestServiceResponse extends ServiceResponse {
 		super(request, client);
 	}
 	public void write(ServiceMessage returnAddress, Object value) {
+<<<<<<< Updated upstream
 		System.out.println("GOT "+new ResponseMessage(returnAddress, value));
+=======
+		System.out.println(new ResponseMessage(returnAddress, value));
+>>>>>>> Stashed changes
 	}
 }
