@@ -85,8 +85,8 @@ public class XBeeService extends Service implements SerialPortClient {
 		if ("connect".equals(request.getPath().getLast())) {
 			commandConnect(request, response); 
 		} else {
-			String command = request.getPathElement(-1);
-			String portNamePattern = new ReadWriteRequest(request).getPortNamePattern();
+			String command = request.getPathElement(2);
+			String portNamePattern = request.getPathElement(0);
 			XBeeNetwork network = xbees.get(portNamePattern);
 			if (network == null) {
 				throw new ServiceException("No network found connected to port ["+
@@ -102,6 +102,13 @@ public class XBeeService extends Service implements SerialPortClient {
 			else
 			if ("digitalin".equals(command)) {
 				commandRead(request, response, network, true);
+			}
+			else
+			if ("rssi".equals(command)) {
+				commandRssi(request, response, network, true);
+			}
+			else {
+				Logger.debug("Unsupported command ["+command+"]");
 			}
 		}
 	}
@@ -154,7 +161,7 @@ public class XBeeService extends Service implements SerialPortClient {
 	 */
 	public void commandDigitalWrite(ServiceMessage request, ServiceResponse response, XBeeNetwork network) throws ServiceException {
 		try {
-			ReadWriteRequest req = new ReadWriteRequest(request);
+			ReadWriteRequest req = new ReadWriteRequest(request, network);
 			boolean value = request.argInt(0, 0) > 0;
 			String remoteId = req.getRemoteId();
 			if ("*".equals(remoteId)) {
@@ -176,13 +183,8 @@ public class XBeeService extends Service implements SerialPortClient {
 	 */
 	public void commandRead(ServiceMessage request, ServiceResponse response, XBeeNetwork network, boolean digital) throws ServiceException {
 		try {
-			ReadWriteRequest req = new ReadWriteRequest(request);
-			String[] remoteIds = null;
-			if ("*".equals(req.getRemoteId())) {
-				remoteIds = network.getAllRemoteIds();
-			} else {
-				remoteIds = new String[]{req.getRemoteId()};
-			}
+			ReadWriteRequest req = new ReadWriteRequest(request, network);
+			String[] remoteIds = req.getRemoteIds();
 			for (String remoteId : remoteIds) {
 				ServiceMessage returnAddress = req.getReturnAddress(remoteId);
 				RemoteXBee xbee = network.getRemoteXBee(remoteId);
@@ -191,7 +193,31 @@ public class XBeeService extends Service implements SerialPortClient {
 					value = digital ? xbee.digitalRead(req.getPin()) : xbee.analogRead(req.getPin());
 				}
 				response.write(returnAddress, value);
-				//network.testResponse();
+			}
+		} catch (Exception e) {
+			Logger.debug("Error reading from XBee network", e);
+		}
+	}
+	
+	/**
+	 * @param request
+	 * @param response
+	 * @param network
+	 * @param reader
+	 * @throws ServiceException
+	 */
+	public void commandRssi(ServiceMessage request, ServiceResponse response, XBeeNetwork network, boolean digital) throws ServiceException {
+		try {
+			XBeeRequest req = new XBeeRequest(request, network);
+			String[] remoteIds = req.getRemoteIds();
+			for (String remoteId : remoteIds) {
+				ServiceMessage returnAddress = req.getReturnAddress(remoteId);
+				RemoteXBee xbee = network.getRemoteXBee(remoteId);
+				if (xbee != null) {
+					response.write(returnAddress, xbee.getRssi());
+				} else {
+					Logger.debug("No xbee found for id "+remoteId);
+				}
 			}
 		} catch (Exception e) {
 			Logger.debug("Error reading from XBee network", e);
@@ -199,42 +225,41 @@ public class XBeeService extends Service implements SerialPortClient {
 	}
 }
 
-
 /**
  * Helper class for parsing values from a ServiceMessage.
  *
  */
-class ReadWriteRequest {
+class XBeeRequest {
 	
 	ServiceMessage request;
 	String portNamePattern;
 	String remoteId;
-	int pin;
+	XBeeNetwork network;
 	
-	public ReadWriteRequest(ServiceMessage request) throws ServiceException {
-		if (request.getPath().size() != 4) {
+	public XBeeRequest(ServiceMessage request, XBeeNetwork network) throws ServiceException {
+		this.network = network;
+		if (request.getPath().size() < 3) {
 			throw new ServiceException("Incorrect path in command ["+request+"]");
 		}
 		this.request = request;
 		portNamePattern = request.getPathElement(0);
 		remoteId = request.getPathElement(1);
-		try {
-			pin = Integer.parseInt(request.getPathElement(3));
-		} catch (Exception e) {
-			throw new ServiceException("Incorrect pin number ["+request.getPathElement(3)+"] Should be an integer.");
-		}
 	}
 
 	public String getPortNamePattern() {
 		return portNamePattern;
 	}
-
+	
 	public String getRemoteId() {
 		return remoteId;
 	}
-
-	public int getPin() {
-		return pin;
+	
+	public String[] getRemoteIds() {
+		if ("*".equals(remoteId)) {
+			return network.getAllRemoteIds();
+		} else {
+			return new String[]{remoteId};
+		}
 	}
 	
 	/**
@@ -256,5 +281,27 @@ class ReadWriteRequest {
 			address.append("/").append(elem);
 		}
 		return new ServiceMessage(address.toString());
+	}
+	
+}
+
+class ReadWriteRequest extends XBeeRequest {
+	
+	int pin;
+	
+	public ReadWriteRequest(ServiceMessage request, XBeeNetwork network) throws ServiceException {
+		super(request, network);
+		if (request.getPath().size() != 4) {
+			throw new ServiceException("Incorrect path in command ["+request+"]");
+		}
+		try {
+			pin = Integer.parseInt(request.getPathElement(3));
+		} catch (Exception e) {
+			throw new ServiceException("Incorrect pin number ["+request.getPathElement(3)+"] Should be an integer.");
+		}
+	}
+
+	public int getPin() {
+		return pin;
 	}
 }

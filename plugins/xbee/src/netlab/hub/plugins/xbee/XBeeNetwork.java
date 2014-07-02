@@ -28,8 +28,10 @@ import netlab.hub.util.Logger;
 import netlab.hub.util.ThreadUtil;
 
 import com.rapplogic.xbee.api.ApiId;
+import com.rapplogic.xbee.api.AtCommandResponse;
 import com.rapplogic.xbee.api.PacketListener;
 import com.rapplogic.xbee.api.RemoteAtRequest;
+import com.rapplogic.xbee.api.RemoteAtResponse;
 import com.rapplogic.xbee.api.XBee;
 import com.rapplogic.xbee.api.XBeeAddress16;
 import com.rapplogic.xbee.api.XBeeAddress64;
@@ -141,13 +143,8 @@ public class XBeeNetwork implements PacketListener {
 				if (response instanceof RxResponseIoSample) {
 					RxResponseIoSample ioSample = (RxResponseIoSample)response;
 					int[] addr = ((RxBaseResponse)response).getSourceAddress().getAddress();
-					int remoteId = new DoubleByte(addr[0], addr[1]).get16BitValue();
-					RemoteXBee xbee = xbees.get(remoteId);
-					if (xbee == null) {
-						xbee = new RemoteXBee(Integer.toString(remoteId, 16));
-						xbees.put(xbee.getId(), xbee);
-						Logger.debug("Received initial contact from remote XBee at address "+xbee.getId());
-					}
+					RemoteXBee xbee = getRemote(new DoubleByte(addr[0], addr[1]).get16BitValue());
+					xbee.setRssi(ioSample.getRssi());
 					for (IoSample sample: ioSample.getSamples()) {
 						if (ioSample.containsAnalog()) {
 							for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
@@ -172,12 +169,14 @@ public class XBeeNetwork implements PacketListener {
 		default:
 			if (response.getApiId() == ApiId.ZNET_IO_SAMPLE_RESPONSE) {
 				ZNetRxIoSampleResponse sample = (ZNetRxIoSampleResponse) response;
-				int remoteId = sample.getRemoteAddress16().get16BitValue();
-				RemoteXBee xbee = xbees.get(remoteId);
-				if (xbee == null) {
-					xbee = new RemoteXBee(Integer.toString(remoteId, 16));
-					xbees.put(xbee.getId(), xbee);
-					Logger.debug("Received initial contact from remote XBee at address "+xbee.getId());
+				RemoteXBee xbee = getRemote(sample.getRemoteAddress16().get16BitValue());
+				// getRssi() is not supported in XBee API for XBee series 2 so we need to send out
+				// a DB command to get the signal strength (RSSI) of the last hop.
+				// See ZNetReceiverExample.java in the xbee api package.
+                try {
+                	baseStation.sendAsynchronous(new RemoteAtRequest(sample.getRemoteAddress16(), "DB"));
+				} catch (XBeeException e) {
+					Logger.debug(e);
 				}
 				if (sample.containsAnalog()) {
 					for (int pin=0; pin<xbee.getAnalogPinCount(); pin++) {
@@ -193,9 +192,28 @@ public class XBeeNetwork implements PacketListener {
 						xbee.setDigitalSample(pin, value == null || value.booleanValue() == false ? 0 : 1);
 					}
 				}
+			} else 
+			if (response.getApiId() == ApiId.REMOTE_AT_RESPONSE) {
+				RemoteAtResponse atResponse = (RemoteAtResponse)response;
+				RemoteXBee xbee = getRemote(atResponse.getRemoteAddress16().get16BitValue());
+				if ("DB".equals(atResponse.getCommand())) {
+					int rssi = -((AtCommandResponse)atResponse).getValue()[0]; // DB returns negative db integer value
+					xbee.setRssi(rssi);
+				}
 			}
 		}
 	} 
+	
+	public RemoteXBee getRemote(int remoteId) {
+		String remoteIdStr = Integer.toString(remoteId, 16);
+		RemoteXBee xbee = xbees.get(remoteIdStr);
+		if (xbee == null) {
+			xbee = new RemoteXBee(remoteIdStr);
+			xbees.put(remoteIdStr, xbee);
+			Logger.debug("Received initial contact from remote XBee at address "+remoteIdStr);
+		}
+		return xbee;
+	}
 	
 	/**
 	 * @return

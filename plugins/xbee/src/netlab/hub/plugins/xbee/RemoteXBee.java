@@ -26,6 +26,7 @@ public class RemoteXBee {
 	String id;
 	int[] analogSamples = new int[6];
 	int[] digitalSamples = new int[9];
+	int rssi = 0;
 	
 	public RemoteXBee(String id) {
 		this.id = id;
@@ -65,5 +66,13 @@ public class RemoteXBee {
 	
 	public String getId() {
 		return id;
+	}
+	
+	public void setRssi(int value) {
+		this.rssi = value;
+	}
+	
+	public int getRssi() {
+		return this.rssi;
 	}
 }
