@@ -19,8 +19,12 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 package netlab.hub.plugins.tools.pipe;
 
+import netlab.hub.core.ServiceResponse;
+
 public interface IPipeListener {
 	
 	public void accept(String[] value);
+	
+	public ServiceResponse getResponse();
 
 }

@@ -38,6 +38,6 @@ public class Pipe {
 	
 	public String[] getLatestValue() {
 		return latestValue;
-	}
+	} 
 	
 }

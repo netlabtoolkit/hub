@@ -19,6 +19,11 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 package netlab.hub.plugins.tools.pipe;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import netlab.hub.core.ClientSession;
 import netlab.hub.core.Service;
 import netlab.hub.core.ServiceException;
 import netlab.hub.core.ServiceMessage;
@@ -74,6 +79,9 @@ public class PipeService extends Service {
 						public void accept(String[] value) {
 							resp.write(value);
 						}
+						public ServiceResponse getResponse() {
+							return resp;
+						}
 					});
 				} else if ("latestvalue".equals(command)) {
 					pipe = pipes.get(id);
@@ -84,6 +92,34 @@ public class PipeService extends Service {
 			} catch (NoSuchPipeException e) {
 				throw new ServiceException("No pipe found for command ["+request+"]. Did you send the [/connect "+id+"] command first?");
 			}
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * We don't have to worry about synchronization because the Hub core
+	 * ensures that this method is called in a thread-safe way.
+	 * @see netlab.hub.core.Service#sessionEnded(netlab.hub.core.ClientSession)
+	 */
+	public void sessionEnded(ClientSession client) {
+		List<String> pipesToDelete = new ArrayList<String>();
+		// For each pipe, remove any listeners associated with the client
+		for (Iterator<String> pipeIds = pipes.pipes.keySet().iterator(); pipeIds.hasNext();) {
+			String pipeId = pipeIds.next();
+			Pipe pipe = pipes.pipes.get(pipeId);
+			for (Iterator<IPipeListener> listeners = pipe.listeners.iterator(); listeners.hasNext();) {
+				if (listeners.next().getResponse().isForClient(client)) {
+					listeners.remove();
+					Logger.debug("Removing client listener");
+				}
+			}
+			// If the pipe has no more listeners the queue up the pipe for removal
+			if (pipe.listeners.isEmpty()) {
+				pipesToDelete.add(pipeId);
+			}
+		}
+		for (String id : pipesToDelete) {
+			pipes.pipes.remove(id);
+			Logger.debug("Closing pipe " +id);
 		}
 	}
 
