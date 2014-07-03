@@ -19,9 +19,7 @@ along with NETLab Hub.  If not, see <http://www.gnu.org/licenses/>.
 
 package netlab.hub.plugins.tools.pipe;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import netlab.hub.core.ClientSession;
 import netlab.hub.core.Service;
@@ -101,8 +99,9 @@ public class PipeService extends Service {
 	 * @see netlab.hub.core.Service#sessionEnded(netlab.hub.core.ClientSession)
 	 */
 	public void sessionEnded(ClientSession client) {
-		List<String> pipesToDelete = new ArrayList<String>();
 		// For each pipe, remove any listeners associated with the client
+		// Do not clean up the pipe itself since senders may use it again
+		// without sending the "connect" command.
 		for (Iterator<String> pipeIds = pipes.pipes.keySet().iterator(); pipeIds.hasNext();) {
 			String pipeId = pipeIds.next();
 			Pipe pipe = pipes.pipes.get(pipeId);
@@ -112,14 +111,6 @@ public class PipeService extends Service {
 					Logger.debug("Removing client listener");
 				}
 			}
-			// If the pipe has no more listeners the queue up the pipe for removal
-			if (pipe.listeners.isEmpty()) {
-				pipesToDelete.add(pipeId);
-			}
-		}
-		for (String id : pipesToDelete) {
-			pipes.pipes.remove(id);
-			Logger.debug("Closing pipe " +id);
 		}
 	}
 
