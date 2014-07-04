@@ -41,5 +41,5 @@ Push to origin
 
 In GitHub:
 Click "Releases" tab.
-Create the release based on the tag (e.g. "v5.0.1" @ Target: master)
+Create the release based on the tag (e.g. "v5.0.1" @ Target: master). Name it “NETLab Hub 5.0.2” (using correct version)
 Upload the binaries created above.
